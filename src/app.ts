@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import auth from './middleware/auth';
 import { User } from './models/user';
-import customerRouter from './routes.config';
+import productRouter from './controllers/productController';
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -58,5 +58,5 @@ app.post("/register", async (req, res) => {
     res.status(201).json(teste);
 });
 
-app.use('/customers/', customerRouter);
+app.use('/products/', productRouter);
 export default app;

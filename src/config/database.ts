@@ -4,6 +4,9 @@ const Sequelize = require('sequelize');
 var opts = {
     dialect: 'mysql',
     host: 'localhost',
+    define: {
+        freezeTableName: true,
+    }
 }
 
 const sequelize = new Sequelize(process.env.DATABASE_NAME, 'root',process.env.DATABASE_PASSWORD, opts);
