@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Product } from '../models/product';
 import express from 'express';
 import auth from '../middleware/auth';
+const database = require('../config/database');
 
 const router = express.Router();
 
@@ -17,7 +18,13 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
 }
 
 async function getProducts(req: Request, res: Response, next: NextFunction) {
-    const products = await Product.findAll()
+    const start = +req.params.start;
+    const end = +req.params.end;
+    const filter = req.params.filter;
+
+    const products = await Product.findAll({ offset: start, limit: end-start, where: {
+        name: database.where(database.fn('LOWER', database.col('name')), 'LIKE', '%' + filter + '%')
+    }})
     res.json(products);
 }
 async function postProduct(req: Request, res: Response, next: NextFunction) {
@@ -58,7 +65,7 @@ async function deleteProduct(req: Request, res: Response, next: NextFunction) {
 
 router.get('/:id', getProduct);
 
-router.get('/', getProducts);
+router.get('/:start/:end/:filter', getProducts);
 
 router.put('/:id', patchProduct);
 router.post('/',auth, postProduct);

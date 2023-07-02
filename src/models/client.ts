@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize'
 const database = require('../config/database');
-export const User = database.define('client', {
+export const Client = database.define('client', {
     first_name: { type: Sequelize.STRING, default: null },
     last_name: { type: Sequelize.STRING, default: null },
     email: { type: Sequelize.STRING, unique: true },

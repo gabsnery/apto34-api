@@ -5,7 +5,7 @@ import 'express-async-errors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import auth from './middleware/auth';
-import { User } from './models/user';
+import { Client } from './models/client';
 import productRouter from './controllers/productController';
 const jwt = require("jsonwebtoken");
 
@@ -29,7 +29,7 @@ app.post("/login", async (req, res) => {
         if (!(email && password)) {
             res.status(400).send("All input is required");
         }
-        const user = await User.findOne({where:{ email:email }});
+        const user = await Client.findOne({where:{ email:email }});
         if (user && (await bcrypt.compare(password, user.password))) {
             const token = jwt.sign(
                 { user_id: user._id, email },
@@ -49,7 +49,7 @@ app.post("/login", async (req, res) => {
 app.post("/register", async (req, res) => {
     const { first_name,email, last_name,password } = req.body;
     let encryptedPassword = await bcrypt.hash(password, 10);
-    const teste=await User.create({
+    const teste=await Client.create({
         first_name: first_name,
         last_name: last_name,
         email: email,
