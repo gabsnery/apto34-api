@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Product } from '../models/product';
 import express from 'express';
 import auth from '../middleware/auth';
+import { Color } from '../models/color';
 const database = require('../config/database');
 
 const router = express.Router();
@@ -22,18 +23,19 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
     const end = +req.params.end;
     const filter = req.params.filter;
 
-    const products = await Product.findAll({ offset: start, limit: end-start, where: {
+ /*    const products = await Product.findAll({ offset: start, limit: end-start, where: {
         name: database.where(database.fn('LOWER', database.col('name')), 'LIKE', '%' + filter + '%')
-    }})
+    },  include: Color}) */
+    const products = await Product.findAll({ offset: start, limit: end-start,  include: Color})
     res.json(products);
 }
 async function postProduct(req: Request, res: Response, next: NextFunction) {
-    const { name, description, desativado, date_deactivated } = req.body;
+    const { nome, descricao, desativado, data_desativacao } = req.body;
     const result = await Product.create({
-        name: name,
-        description: description,
+        nome: nome,
+        descricao: descricao,
         desativado: desativado || false,
-        date_deactivated: date_deactivated || null
+        data_desativacao: data_desativacao || null
     })
     if (result)
         res.status(201).json(result);

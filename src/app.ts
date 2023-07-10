@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import auth from './middleware/auth';
 import { Client } from './models/client';
 import productRouter from './controllers/productController';
+import colorRouter from './controllers/colorController';
+import sizeRouter from './controllers/sizeController';
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -25,12 +27,12 @@ app.post("/welcome", auth, (req, res) => {
 // Login
 app.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
-        if (!(email && password)) {
+        const { email, senha } = req.body;
+        if (!(email && senha)) {
             res.status(400).send("All input is required");
         }
         const user = await Client.findOne({where:{ email:email }});
-        if (user && (await bcrypt.compare(password, user.password))) {
+        if (user && (await bcrypt.compare(senha, user.senha))) {
             const token = jwt.sign(
                 { user_id: user._id, email },
                 process.env.TOKEN_KEY,
@@ -48,15 +50,21 @@ app.post("/login", async (req, res) => {
 });
 app.post("/register", async (req, res) => {
     const { first_name,email, last_name,password } = req.body;
+    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ password:", password)
+    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ last_name:", last_name)
+    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ email:", email)
+    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ first_name:", first_name)
     let encryptedPassword = await bcrypt.hash(password, 10);
     const teste=await Client.create({
-        first_name: first_name,
-        last_name: last_name,
+        nome: first_name,
+        sobrenome: last_name,
         email: email,
-        password:encryptedPassword
+        senha:encryptedPassword
     })
     res.status(201).json(teste);
 });
 
 app.use('/products/', productRouter);
+app.use('/color/', colorRouter);
+app.use('/sizes/', sizeRouter);
 export default app;
