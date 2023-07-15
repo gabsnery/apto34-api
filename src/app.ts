@@ -9,6 +9,7 @@ import { Client } from './models/client';
 import productRouter from './controllers/productController';
 import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
+import subCategoryRouter from './controllers/subCategoryController';
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -64,7 +65,8 @@ app.post("/register", async (req, res) => {
     res.status(201).json(teste);
 });
 
-app.use('/products/', productRouter);
-app.use('/color/', colorRouter);
-app.use('/sizes/', sizeRouter);
+app.use('/api/product/', productRouter);
+app.use('/api/color/', colorRouter);
+app.use('/api/sizes/', sizeRouter);
+app.use('/api/Subcategorias/', subCategoryRouter);
 export default app;
