@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize'
 import { Color } from './color';
+import { Photo } from './photo';
 import { ProdutoSubcategoria } from './ProdutoSubcategoria';
 const database = require('../config/database');
 export const Product = database.define('produto', {
@@ -16,6 +17,21 @@ const Produto_tem_cor = database.define('produto_tem_cor', {
 Product.belongsToMany(Color, { through: Produto_tem_cor });
 Color.belongsToMany(Product, { through: Produto_tem_cor });
 
+
+export const produto_tem_photo = database.define('produto_tem_photo', {
+  is_cover: { type: Sequelize.BOOLEAN },
+}, { timestamps: false });
+Product.belongsToMany(Photo, {
+  through: produto_tem_photo,
+  foreignKey: 'produtoId',
+  as: 'photo'
+});
+Photo.belongsToMany(Product, {
+  through: produto_tem_photo,
+  foreignKey: 'photoId',
+  as: 'product'
+});
+
 const ProdutoTemSubcategoria = database.define('produto_tem_subcategoria', {
 }, {
   tableName: 'produto_tem_subcategoria',
@@ -25,7 +41,7 @@ const ProdutoTemSubcategoria = database.define('produto_tem_subcategoria', {
 ProdutoSubcategoria.belongsToMany(Product, {
   through: ProdutoTemSubcategoria,
 });
-Product.belongsToMany(ProdutoSubcategoria, { 
-  through: ProdutoTemSubcategoria ,
+Product.belongsToMany(ProdutoSubcategoria, {
+  through: ProdutoTemSubcategoria,
   as: 'produtoSubcategoria',
 });

@@ -10,6 +10,10 @@ import productRouter from './controllers/productController';
 import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
+
+// Instantiate a storage client
+// A bucket is a container for objects (files).
+
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -24,7 +28,7 @@ app.use(express.json());
 
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome 🙌 ");
-  });
+});
 // Login
 app.post("/login", async (req, res) => {
     try {
@@ -32,7 +36,7 @@ app.post("/login", async (req, res) => {
         if (!(email && senha)) {
             res.status(400).send("All input is required");
         }
-        const user = await Client.findOne({where:{ email:email }});
+        const user = await Client.findOne({ where: { email: email } });
         if (user && (await bcrypt.compare(senha, user.senha))) {
             const token = jwt.sign(
                 { user_id: user._id, email },
@@ -43,24 +47,20 @@ app.post("/login", async (req, res) => {
             );
             user.token = token;
             res.status(200).json(user);
-        } 
+        }
         res.status(400).send("Invalid Credentials");
     } catch (err) {
         console.log(err);
     }
 });
 app.post("/register", async (req, res) => {
-    const { first_name,email, last_name,password } = req.body;
-    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ password:", password)
-    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ last_name:", last_name)
-    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ email:", email)
-    console.log("🚀 ~ file: app.ts:53 ~ app.post ~ first_name:", first_name)
+    const { first_name, email, last_name, password } = req.body;
     let encryptedPassword = await bcrypt.hash(password, 10);
-    const teste=await Client.create({
+    const teste = await Client.create({
         nome: first_name,
         sobrenome: last_name,
         email: email,
-        senha:encryptedPassword
+        senha: encryptedPassword
     })
     res.status(201).json(teste);
 });

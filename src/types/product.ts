@@ -5,6 +5,7 @@ interface ProductResponse {
     valor_produto?: number ;
     desativado?: boolean;
     produtoSubcategoria: ProdutoSubcategoriaResponse[];
+    photos?:string[]
   }
   
   export default ProductResponse;
