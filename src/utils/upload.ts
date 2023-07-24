@@ -1,4 +1,5 @@
-import {Storage} from '@google-cloud/storage'
+import { Storage } from '@google-cloud/storage'
+import sharp from 'sharp';
 const fs = require('fs');
 const { format } = require('util');
 const Multer = require('multer');
@@ -12,35 +13,44 @@ const storage = new Storage({
 
 const bucketName = 'apto34'; // Nome do seu bucket no Google Cloud Storage
 
+interface retorno {
+    url: string
+    thumbnail: string
+}
 
-export const uploadFile = (file: any, name: string): Promise<string> => {
+export const uploadFile = (file: any, name: string): Promise<retorno> => {
 
     return new Promise((resolve, reject) => {
         if (!file) {
             reject(new Error('Nenhum arquivo foi enviado.'));
         }
-
         // Cria um novo nome para o arquivo no bucket
-        const fileName = `${name}.png`;
+        const resizedImagePath = `uploads/${name}-diminuido.jpg`;
+        const { path } = file;
+        console.log("🚀 ~ file: upload.ts:27 ~ returnnewPromise ~ path:", path)
+        console.log("🚀 ~ file: upload.ts:21 ~ uploadFile ~ path:", path)
+        sharp(file.path)
+            .resize(500, 500, { fit: 'inside' })
+            .toFile(resizedImagePath, async (err, info) => {
+                console.log("🚀 ~ file: upload.ts:32 ~ .toFile ~ resizedImagePath:", resizedImagePath)
 
-        // Define as opções do upload
-        const options = {
-            destination: fileName,
-        };
+                const teste = storage.bucket(bucketName).upload(resizedImagePath, {
+                    destination: `${name}-diminuido.jpg`,
+                }).catch(e => console.log(`ERRAO AQUI ${e}`))
+                const teste2 = storage.bucket(bucketName).upload(path, {
+                    destination: `${name}.jpg`,
+                }).catch(e => console.log(`ERRAO AQUI ${e}`))
+                Promise.all([teste, teste2]).then((item) => {
+                    console.log("🚀 ~ file: upload.ts:43 ~ Promise.all ~ item:", item)
+                    const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-diminuido.jpg`;
+                    const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
+                    fs.unlinkSync(path);
+                    fs.unlinkSync(resizedImagePath);
 
-        // Realiza o upload do arquivo para o Google Cloud Storage
-        storage.bucket(bucketName).upload(file.path, options, (err, uploadedFile) => {
-            if (err) {
-                console.error('Erro ao fazer upload do arquivo:', err);
-                reject(new Error('Ocorreu um erro ao fazer upload do arquivo.'));
-            }
+                    resolve({ url: fileUrl2, thumbnail:fileUrl  })
 
-            // Remove o arquivo temporário
-            fs.unlinkSync(file.path);
+                })
+            })
 
-            // Retorna a URL de acesso ao arquivo no Google Cloud Storage
-            const fileUrl = `https://storage.googleapis.com/${bucketName}/${uploadedFile.name}`;
-            resolve(fileUrl);
-        });
     });
 };

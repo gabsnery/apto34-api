@@ -9,15 +9,20 @@ const database = require('../config/database');
 const router = express.Router();
 
 
+async function postPedido(req: Request, res: Response, next: NextFunction) {
+  
 
-async function getSizes(req: Request, res: Response, next: NextFunction) {
+}
+
+async function getPedidos(req: Request, res: Response, next: NextFunction) {
     const sizes = await Size.findAll({ attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }})
     res.json(sizes);
 }
 
 
 
-router.get('/', getSizes);
+router.get('/', getPedidos);
+router.post('/', postPedido);
 
 
 

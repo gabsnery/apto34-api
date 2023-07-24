@@ -8,6 +8,10 @@ export const Photo = database.define('photo', {
     is_cover: {
       type: Sequelize.BOOLEAN,
       defaultValue: false
+    },
+    thumbnail: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
     }
   }, {
     tableName: 'photo',
