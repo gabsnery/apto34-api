@@ -2,6 +2,7 @@ import Sequelize from 'sequelize';
 import { Client } from './client';
 import { Deliver } from './deliver';
 import { FiscalNote } from './nota';
+import { Payment } from './payment';
 const database = require('../config/database');
 
 // Definindo o modelo para a tabela "pedido"
@@ -24,7 +25,5 @@ export const Pedido = database.define('pedido', {
 Pedido.belongsTo(Client, { foreignKey: 'idCliente', as: 'cliente' });
 Pedido.belongsTo(Deliver, { foreignKey: 'idEntrega', as: 'entrega' });
 Pedido.belongsTo(FiscalNote, { foreignKey: 'idNotaFiscal', as: 'notaFiscal' });
-Pedido.belongsTo(Pagamento, { foreignKey: 'idPagamento', as: 'pagamento' });
-Pedido.belongsTo(PedidoStatus, { foreignKey: 'idPedidoStatus', as: 'pedidoStatus' });
-
-module.exports = Pedido;
+Pedido.belongsTo(Payment, { foreignKey: 'idPagamento', as: 'pagamento' });
+/* Pedido.belongsTo(PedidoStatus, { foreignKey: 'idPedidoStatus', as: 'pedidoStatus' }); */

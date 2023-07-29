@@ -65,7 +65,15 @@ export const Unidade = database.define('unidade', {
     underscored: true,
   });
   
-  
+  export const Empresa = database.define('empresa', {
+    id: { type: Sequelize.INTEGER, primaryKey: true },
+    data_criacao: { type: Sequelize.DATE, allowNull: false },
+    nome: { type: Sequelize.STRING(255), allowNull: false },
+    desativado: { type: Sequelize.BOOLEAN, allowNull: false },
+    data_desativacao: { type: Sequelize.DATE, allowNull: true },
+  }, {
+    tableName: 'empresa',
+  });
   Unidade.belongsTo(Empresa, { foreignKey: 'idEmpresa', as: 'empresa' });
   Unidade.belongsTo(Telefone, { foreignKey: 'idTelefone', as: 'telefone' });
   Unidade.belongsTo(Address, { foreignKey: 'idEndereco', as: 'endereco' });

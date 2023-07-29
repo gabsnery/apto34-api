@@ -10,10 +10,7 @@ import productRouter from './controllers/productController';
 import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
-
-// Instantiate a storage client
-// A bucket is a container for objects (files).
-
+const pagarme = require('pagarme')
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -63,6 +60,64 @@ app.post("/register", async (req, res) => {
         senha: encryptedPassword
     })
     res.status(201).json(teste);
+});
+
+app.post("/pagar_me", async (req, res) => {
+    var fs = require('fs');
+    const request = require("request");
+    var body = JSON.parse(fs.readFileSync('body.json', 'utf8'));
+    
+    var options = {                 
+        method: 'POST',             
+        uri: 'https://api.pagar.me/core/v5/orders',                    
+        headers: {               
+          'Authorization': 'Basic ' + Buffer.from("sk_test_*:").toString('base64'),
+          'Content-Type': 'application/json'              
+        },
+        json : body
+    };    
+    
+    request(options, function(error:any, response:any, body:any) {  
+        console.log(response.body);
+    });
+})
+app.post("/mercado_pago", async (req, res) => {
+    var mercadopago = require('mercadopago');
+    mercadopago.configure({
+        access_token: 'TEST-470723307119049-081900-46bbea6c2dff856c33c1831c8fc99548-209131572'
+    });
+ 
+    mercadopago.preferences.create(req.body)
+    .then(function (preferencia: any) {
+        const {  id } = preferencia.body;
+
+            console.log("🚀 ~ file: app.ts:134 ~ .then ~ preferencia:", preferencia)
+            // Este valor substituirá a string "<%= global.id %>" no seu HTML
+            res.status(201).json(id);
+
+        }).catch(function (error: any) {
+            console.log(error);
+        });
+
+});
+app.post("/process_payment", async (req, res) => {
+
+
+    var mercadopago = require('mercadopago');
+    mercadopago.configure({
+        access_token: 'TEST-470723307119049-081900-46bbea6c2dff856c33c1831c8fc99548-209131572'
+    });
+ 
+    console.log("🚀 ~ file: app.ts:136 ~ response.body:", req.body)
+    mercadopago.payment.save(req.body)
+        .then(function (response: any) {
+            const { status, status_detail, id } = response.body;
+            res.status(response.status).json(response.body.id);
+        })
+        .catch(function (error: any) {
+            console.error(error);
+            res.status(400)
+        });
 });
 
 app.use('/api/product/', productRouter);

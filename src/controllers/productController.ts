@@ -21,6 +21,9 @@ const storage = Multer.diskStorage({
 });
 const router = express.Router();
 
+interface MulterRequest extends Request {
+    files?: any[];
+}
 async function getProduct(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id;
 
@@ -90,7 +93,7 @@ const upload = Multer({ dest: 'uploads/' }); // Define o diretório onde os arqu
 
 async function postProduct(req: Request, res: Response, next: NextFunction) {
     const body = JSON.parse(req.body.json) as ProductResponse;
-    const files: UploadedFile[] = req.files as UploadedFile[]; // Obtém a lista de arquivos enviados
+    const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
     await Product.create({
         nome: body.nome,
         descricao: body.descricao,
