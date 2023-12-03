@@ -10,7 +10,9 @@ import productRouter from './controllers/productController';
 import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
-const pagarme = require('pagarme')
+
+const fs = require('fs');
+
 const jwt = require("jsonwebtoken");
 
 const app = express();
@@ -19,8 +21,11 @@ app.use(morgan('tiny'));
 
 app.use(cors());
 
-app.use(helmet());
-
+app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+    })
+  );
 app.use(express.json());
 
 app.post("/welcome", auth, (req, res) => {
@@ -62,25 +67,7 @@ app.post("/register", async (req, res) => {
     res.status(201).json(teste);
 });
 
-app.post("/pagar_me", async (req, res) => {
-    var fs = require('fs');
-    const request = require("request");
-    var body = JSON.parse(fs.readFileSync('body.json', 'utf8'));
-    
-    var options = {                 
-        method: 'POST',             
-        uri: 'https://api.pagar.me/core/v5/orders',                    
-        headers: {               
-          'Authorization': 'Basic ' + Buffer.from("sk_test_*:").toString('base64'),
-          'Content-Type': 'application/json'              
-        },
-        json : body
-    };    
-    
-    request(options, function(error:any, response:any, body:any) {  
-        console.log(response.body);
-    });
-})
+
 app.post("/mercado_pago", async (req, res) => {
     var mercadopago = require('mercadopago');
     mercadopago.configure({
@@ -89,14 +76,14 @@ app.post("/mercado_pago", async (req, res) => {
  
     mercadopago.preferences.create(req.body)
     .then(function (preferencia: any) {
-        const {  id } = preferencia.body;
-
-            console.log("🚀 ~ file: app.ts:134 ~ .then ~ preferencia:", preferencia)
             // Este valor substituirá a string "<%= global.id %>" no seu HTML
-            res.status(201).json(id);
+            console.log("🚀 ~ file: app.ts:93 ~ preferencia.body:", preferencia.body)
+            res.status(201).json(preferencia.body);
 
         }).catch(function (error: any) {
             console.log(error);
+            res.status(400)
+
         });
 
 });
@@ -111,8 +98,8 @@ app.post("/process_payment", async (req, res) => {
     console.log("🚀 ~ file: app.ts:136 ~ response.body:", req.body)
     mercadopago.payment.save(req.body)
         .then(function (response: any) {
-            const { status, status_detail, id } = response.body;
-            res.status(response.status).json(response.body.id);
+            console.log("🚀 ~ file: app.ts:114 ~ response.body:", response.body)
+            res.status(response.status).json(response.body);
         })
         .catch(function (error: any) {
             console.error(error);
@@ -120,8 +107,11 @@ app.post("/process_payment", async (req, res) => {
         });
 });
 
+
 app.use('/api/product/', productRouter);
 app.use('/api/color/', colorRouter);
 app.use('/api/sizes/', sizeRouter);
 app.use('/api/Subcategorias/', subCategoryRouter);
+app.use('/uploads', express.static('uploads'));
+
 export default app;

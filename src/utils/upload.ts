@@ -18,7 +18,7 @@ interface retorno {
     thumbnail: string
 }
 
-export const uploadFile = (file: any, name: string): Promise<retorno> => {
+export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorno> => {
 
     return new Promise((resolve, reject) => {
         if (!file) {
@@ -47,9 +47,36 @@ export const uploadFile = (file: any, name: string): Promise<retorno> => {
                     fs.unlinkSync(path);
                     fs.unlinkSync(resizedImagePath);
 
-                    resolve({ url: fileUrl2, thumbnail:fileUrl  })
+                    resolve({ url: fileUrl2, thumbnail: fileUrl })
 
                 })
+            })
+
+    });
+};
+export const uploadFile = (file: any, name: string): Promise<retorno> => {
+
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            reject(new Error('Nenhum arquivo foi enviado.'));
+        }
+        // Cria um novo nome para o arquivo no bucket
+        const resizedImagePath = `uploads/${name}-diminuido.jpg`;
+        const { path } = file;
+        console.log("🚀 ~ file: upload.ts:27 ~ returnnewPromise ~ path:", path)
+        console.log("🚀 ~ file: upload.ts:21 ~ uploadFile ~ path:", path)
+        sharp(file.path)
+            .resize(500, 500, { fit: 'inside' })
+            .toFile(resizedImagePath, async (err, info) => {
+                console.log("🚀 ~ file: upload.ts:32 ~ .toFile ~ resizedImagePath:", resizedImagePath)
+                const fileUrl = `http://localhost:3005/uploads/${name}-diminuido.jpg`;
+                const fileUrl2 = `http://localhost:3005/uploads/${name}.jpg`;
+                fs.rename(file.path, `uploads/${name}.jpg`, async (err: any, info: any) => {
+                    console.log("🚀 ~ file: upload.ts:76 ~ fs.rename ~ err:", err)
+                    console.log("🚀 ~ file: upload.ts:76 ~ fs.rename ~ info:", info)
+                })
+
+                resolve({ url: fileUrl2, thumbnail: fileUrl })
             })
 
     });
