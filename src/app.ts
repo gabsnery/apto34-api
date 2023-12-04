@@ -10,6 +10,7 @@ import productRouter from './controllers/productController';
 import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
+import categoryRouter from './controllers/categoryController';
 
 const fs = require('fs');
 
@@ -112,6 +113,7 @@ app.use('/api/product/', productRouter);
 app.use('/api/color/', colorRouter);
 app.use('/api/sizes/', sizeRouter);
 app.use('/api/Subcategorias/', subCategoryRouter);
+app.use('/api/category/', categoryRouter);
 app.use('/uploads', express.static('uploads'));
 
 export default app;

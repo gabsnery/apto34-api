@@ -32,7 +32,6 @@ export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorn
         sharp(file.path)
             .resize(500, 500, { fit: 'inside' })
             .toFile(resizedImagePath, async (err, info) => {
-                console.log("🚀 ~ file: upload.ts:32 ~ .toFile ~ resizedImagePath:", resizedImagePath)
 
                 const teste = storage.bucket(bucketName).upload(resizedImagePath, {
                     destination: `${name}-diminuido.jpg`,
@@ -41,7 +40,6 @@ export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorn
                     destination: `${name}.jpg`,
                 }).catch(e => console.log(`ERRAO AQUI ${e}`))
                 Promise.all([teste, teste2]).then((item) => {
-                    console.log("🚀 ~ file: upload.ts:43 ~ Promise.all ~ item:", item)
                     const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-diminuido.jpg`;
                     const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
                     fs.unlinkSync(path);

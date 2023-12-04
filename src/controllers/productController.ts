@@ -10,6 +10,7 @@ import { ProdutoCategoria } from '../models/ProdutoCategoria';
 import ProductResponse from '../types/product';
 import { uploadFile } from '../utils/upload';
 import { Size } from '../models/size';
+import { Op } from 'sequelize';
 const database = require('../config/database');
 const Multer = require('multer');
 
@@ -56,18 +57,22 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
 }
 
 async function getProducts(req: Request, res: Response, next: NextFunction) {
+    console.log("🚀 ~ file: productController.ts:61 ~ getProducts ~ req.query:", req.query)
 
 
     const products = await Product.findAll({
         include: [{
             model: ProdutoSubcategoria,
             as: 'produtoSubcategoria',
+            where: req.query.type ? {
+                id: req.query.type || []
+            } : {},
             include: {
                 model: ProdutoCategoria,
                 as: 'produtoCategoria',
-                where: {
-                    id: 1,
-                },
+                where: req.query.category ? {
+                    id: req.query.category || []
+                } : {},
             },
         }, {
             model: Photo,
@@ -75,9 +80,17 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
         }, {
             model: Color,
             as: 'color',
+            where: req.query.color ? {
+                id: req.query.color || []
+            } : {},
+            required: !!req.query.color
         }, {
             model: Size,
             as: 'size',
+            where: req.query.size ? {
+                id: req.query.size || []
+            } : {},
+            required: !!req.query.size
         },
         ]
     })
@@ -177,16 +190,16 @@ async function transformProducts(products: any[]): Promise<ProductResponse[]> {
             photos: product.photo?.filter((ite: any) => ite.thumbnail === false).map((item: any) => item.url),
             thumbnails: product.photo?.filter((ite: any) => ite.thumbnail === true).map((item: any) => item.url),
             cores: product.color?.map((item: any) => {
-                console.log("🚀 ~ file: productController.ts:177 ~ cores:product.color?.map ~ item:", JSON.stringify(item.produto_tem_cor))
-                return({
-                id: item.id,
-                descricao: item.descricao,
-                quantidade: item.produto_tem_cor.quantidade
-            })}),
+                return ({
+                    id: item.id,
+                    descricao: item.descricao,
+                    quantidade: item.produto_tem_cor.quantidade
+                })
+            }),
             tamanhos: product.size?.map((item: any) => ({
                 id: item.id,
                 descricao: item.descricao,
-                quantidade:item.produto_tem_tamanho.quantity 
+                quantidade: item.produto_tem_tamanho.quantity
             })),
             nome: product.nome,
             valor_produto: product.valor_produto,
