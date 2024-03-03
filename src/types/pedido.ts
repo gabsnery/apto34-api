@@ -1,8 +1,10 @@
-interface PedidoResponse {
+interface PedidoRequest {
   id?: number;
   cliente:number;
   produtos: Productos[];
+  endereco:Endereco
 }
+
 interface Productos {
   id?: number;
   quantidade?: number;
@@ -16,4 +18,4 @@ interface Endereco {
   bairro?: string;
 }
 
-export default PedidoResponse;
+export default PedidoRequest;

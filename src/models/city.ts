@@ -17,4 +17,3 @@ City.belongsTo(State, {
   as: 'estado',
 });
 
-module.exports = City;

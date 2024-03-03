@@ -3,7 +3,8 @@ const Sequelize = require('sequelize');
 //database wide options
 var opts = {
     dialect: 'mysql',
-    host: 'localhost',
+    host:  process.env.DATABASE_HOST,
+    port:process.env.DATABASE_PORT,
     define: {
         freezeTableName: true,
     }

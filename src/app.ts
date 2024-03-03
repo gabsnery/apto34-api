@@ -11,6 +11,11 @@ import colorRouter from './controllers/colorController';
 import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
 import categoryRouter from './controllers/categoryController';
+import pedidoRouter from './controllers/pedidoController';
+import * as MercadoPago from 'mercadopago';
+import { payment, webhook } from './types/mp_payment';
+import { Payment } from './models/payment';
+
 
 const fs = require('fs');
 
@@ -24,9 +29,9 @@ app.use(cors());
 
 app.use(
     helmet({
-      crossOriginResourcePolicy: false,
+        crossOriginResourcePolicy: false,
     })
-  );
+);
 app.use(express.json());
 
 app.post("/welcome", auth, (req, res) => {
@@ -69,38 +74,95 @@ app.post("/register", async (req, res) => {
 });
 
 
+/* app.post("/mercado_pago_issuers", async (req, res) => {
+    var mercadopago = require('mercadopago');
+    mercadopago.configure({
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN
+    });
+
+    mercadopago.
+}); */
 app.post("/mercado_pago", async (req, res) => {
     var mercadopago = require('mercadopago');
     mercadopago.configure({
-        access_token: 'TEST-470723307119049-081900-46bbea6c2dff856c33c1831c8fc99548-209131572'
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN
     });
- 
-    mercadopago.preferences.create(req.body)
-    .then(function (preferencia: any) {
-            // Este valor substituirá a string "<%= global.id %>" no seu HTML
-            console.log("🚀 ~ file: app.ts:93 ~ preferencia.body:", preferencia.body)
-            res.status(201).json(preferencia.body);
 
+    mercadopago.preferences.create(req.body)
+        .then(function (preferencia: any) {
+            console.log("🚀 ~ preferencia:", preferencia)
+            res.status(201).json(preferencia.body);
         }).catch(function (error: any) {
-            console.log(error);
+            console.log("🚀 ~ error:", error)
             res.status(400)
 
         });
 
 });
+
+app.post("/card_token", async (req, res) => {
+    MercadoPago.configure({
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || ''
+    });
+
+
+    const teste = req.body
+    MercadoPago.card_token.create({
+        card_number: teste.card_number,
+        security_code: teste.security_code,
+        expiration_month: teste.card_expiration_month,
+        expiration_year: teste.cardExpirationYear,
+        cardholder: { name: teste.card_holder_name, identification: { number: teste.identification_number, type: teste.identification_type } },
+    }).then(function (response: any) {
+        res.status(response.status).json(response.body);
+    })
+        .catch(function (error: any) {
+            console.error(error);
+            res.status(400)
+        });
+})
+app.post("/webhook", async (req, res) => {
+    const teste: webhook = req.body
+    MercadoPago.configure({
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || ''
+    });
+    if (teste.type && teste?.data?.id) {
+        MercadoPago.payment.get(teste.data.id || 0).then(x => {
+            console.log("🚀 ~ MercadoPago.payment.get ~ x:", x)
+        })
+    }
+
+})
 app.post("/process_payment", async (req, res) => {
 
 
     var mercadopago = require('mercadopago');
     mercadopago.configure({
-        access_token: 'TEST-470723307119049-081900-46bbea6c2dff856c33c1831c8fc99548-209131572'
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN, options: { timeout: 5000, idempotencyKey: Math.floor(Math.random() * 200) }
     });
- 
-    console.log("🚀 ~ file: app.ts:136 ~ response.body:", req.body)
+
+    MercadoPago.configure({
+        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || ''
+    });
+
+
+
     mercadopago.payment.save(req.body)
-        .then(function (response: any) {
-            console.log("🚀 ~ file: app.ts:114 ~ response.body:", response.body)
-            res.status(response.status).json(response.body);
+        .then(function (response: { body: payment, status: any }) {
+            console.log("🚀 ~ body:", response.body)
+            Payment.create({
+                parcelado: (response.body.installments ? response.body.installments : 0) > 0 ? true : false,
+                quantidade_parcelas: response.body.installments || 0,
+                pagamento_confirmado: response.body.status === 'Aproved',
+                status: response.body.status,
+                status_detail: response.body.status_detail,
+                id_pagamento_tipo: 1,
+                data_pagamento_confirmado: response.body.date_approved,
+                mp_id: response.body.id,
+                pix_qrcode: response.body.point_of_interaction?.transaction_data.qr_code_base64 || ''
+            }).then((newPayment: any) => {
+                res.status(response.status).json(newPayment);
+            })
         })
         .catch(function (error: any) {
             console.error(error);
@@ -114,6 +176,7 @@ app.use('/api/color/', colorRouter);
 app.use('/api/sizes/', sizeRouter);
 app.use('/api/Subcategorias/', subCategoryRouter);
 app.use('/api/category/', categoryRouter);
+app.use('/api/order/', pedidoRouter);
 app.use('/uploads', express.static('uploads'));
 
 export default app;

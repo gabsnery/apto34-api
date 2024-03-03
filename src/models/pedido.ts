@@ -9,10 +9,10 @@ const database = require('../config/database');
 export const Pedido = database.define('pedido', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   idPedidoStatus: { type: Sequelize.INTEGER, allowNull: false },
-  idNotaFiscal: { type: Sequelize.INTEGER, allowNull: false },
+  idNotaFiscal: { type: Sequelize.INTEGER, allowNull: true },
   data_pedido_realizado: { type: Sequelize.DATE, allowNull: false },
   idCliente: { type: Sequelize.INTEGER, allowNull: false },
-  idPagamento: { type: Sequelize.INTEGER, allowNull: false },
+  idPagamento: { type: Sequelize.INTEGER, allowNull: true },
   idEntrega: { type: Sequelize.INTEGER, allowNull: false },
   pedido_concluido: { type: Sequelize.BOOLEAN, allowNull: false },
   data_pedido_concluido: { type: Sequelize.DATE, allowNull: true },

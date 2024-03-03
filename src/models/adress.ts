@@ -19,4 +19,3 @@ Address.belongsTo(City, {
   as: 'cidade',
 });
 
-module.exports = Address;

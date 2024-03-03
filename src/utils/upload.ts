@@ -8,10 +8,10 @@ const upload = Multer({ dest: 'uploads/' }); // Diretório temporário para arma
 
 // Configurações do Google Cloud Storage
 const storage = new Storage({
-    keyFilename: `src/dora-da603-55fdbf2e26d4.json`,
+    keyFilename: process.env.GOOGLE_STORAGE_KEYFILENAME,
 });
 
-const bucketName = 'apto34'; // Nome do seu bucket no Google Cloud Storage
+const bucketName = process.env.GOOGLE_STORAGE_BUCKETNAME || ''; // Nome do seu bucket no Google Cloud Storage
 
 interface retorno {
     url: string
@@ -19,37 +19,45 @@ interface retorno {
 }
 
 export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorno> => {
-
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if (!file) {
             reject(new Error('Nenhum arquivo foi enviado.'));
         }
         // Cria um novo nome para o arquivo no bucket
-        const resizedImagePath = `uploads/${name}-diminuido.jpg`;
+        const resizedImagePath = `uploads/${name}-thumb.jpg`;
         const { path } = file;
-        console.log("🚀 ~ file: upload.ts:27 ~ returnnewPromise ~ path:", path)
-        console.log("🚀 ~ file: upload.ts:21 ~ uploadFile ~ path:", path)
-        sharp(file.path)
-            .resize(500, 500, { fit: 'inside' })
-            .toFile(resizedImagePath, async (err, info) => {
+        const isBucketTrue = (await storage.bucket(bucketName).exists())[0]
+        console.log("🚀 ~ .toFile ~ isBucketTrue:", isBucketTrue)
+        if (isBucketTrue) {
+            sharp(file.path)
+                .resize(500, 500, { fit: 'inside' })
+                .toFile(resizedImagePath, async (err, info) => {
+                    const teste = storage.bucket(bucketName).upload(resizedImagePath, {
+                        destination: `${name}-thumb.jpg`,
+                    }).catch(e => {
+                        throw e;
+                    })
+                    const teste2 = storage.bucket(bucketName).upload(path, {
+                        destination: `${name}.jpg`,
+                    }).catch(e => {
+                        throw e;
+                    })
+                    Promise.all([teste, teste2]).then((item) => {
+                        const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-thumb.jpg`;
+                        const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
+                        fs.unlinkSync(path);
+                        fs.unlinkSync(resizedImagePath);
 
-                const teste = storage.bucket(bucketName).upload(resizedImagePath, {
-                    destination: `${name}-diminuido.jpg`,
-                }).catch(e => console.log(`ERRAO AQUI ${e}`))
-                const teste2 = storage.bucket(bucketName).upload(path, {
-                    destination: `${name}.jpg`,
-                }).catch(e => console.log(`ERRAO AQUI ${e}`))
-                Promise.all([teste, teste2]).then((item) => {
-                    const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-diminuido.jpg`;
-                    const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
-                    fs.unlinkSync(path);
-                    fs.unlinkSync(resizedImagePath);
+                        resolve({ url: fileUrl2, thumbnail: fileUrl })
 
-                    resolve({ url: fileUrl2, thumbnail: fileUrl })
+                    })
 
                 })
-            })
-
+        } 
+        else { // <-- note `e` has explicit `unknown` type
+            console.error(`Storage não encontrato`)
+            return uploadFile(file, `${name}`)
+        }
     });
 };
 export const uploadFile = (file: any, name: string): Promise<retorno> => {
@@ -59,15 +67,13 @@ export const uploadFile = (file: any, name: string): Promise<retorno> => {
             reject(new Error('Nenhum arquivo foi enviado.'));
         }
         // Cria um novo nome para o arquivo no bucket
-        const resizedImagePath = `uploads/${name}-diminuido.jpg`;
+        const resizedImagePath = `uploads/thumbnail/${name}-diminuido.jpg`;
         const { path } = file;
-        console.log("🚀 ~ file: upload.ts:27 ~ returnnewPromise ~ path:", path)
-        console.log("🚀 ~ file: upload.ts:21 ~ uploadFile ~ path:", path)
         sharp(file.path)
             .resize(500, 500, { fit: 'inside' })
             .toFile(resizedImagePath, async (err, info) => {
-                console.log("🚀 ~ file: upload.ts:32 ~ .toFile ~ resizedImagePath:", resizedImagePath)
-                const fileUrl = `http://localhost:3005/uploads/${name}-diminuido.jpg`;
+
+                const fileUrl = `http://localhost:3005/uploads/thumbnail/${name}-diminuido.jpg`;
                 const fileUrl2 = `http://localhost:3005/uploads/${name}.jpg`;
                 fs.rename(file.path, `uploads/${name}.jpg`, async (err: any, info: any) => {
                     console.log("🚀 ~ file: upload.ts:76 ~ fs.rename ~ err:", err)

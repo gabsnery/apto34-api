@@ -8,7 +8,7 @@ import { Photo } from '../models/photo';
 import { ProdutoSubcategoria } from '../models/ProdutoSubcategoria';
 import { ProdutoCategoria } from '../models/ProdutoCategoria';
 import ProductResponse from '../types/product';
-import { uploadFile } from '../utils/upload';
+import { uploadFile, uploadFileGoogleStorage } from '../utils/upload';
 import { Size } from '../models/size';
 import { Op } from 'sequelize';
 const database = require('../config/database');
@@ -57,9 +57,6 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
 }
 
 async function getProducts(req: Request, res: Response, next: NextFunction) {
-    console.log("🚀 ~ file: productController.ts:61 ~ getProducts ~ req.query:", req.query)
-
-
     const products = await Product.findAll({
         include: [{
             model: ProdutoSubcategoria,
@@ -120,7 +117,7 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
 
 
         if (files) {
-            const uploadPromises = files?.map((file) => uploadFile(file, `${newPost.id}${Date.now()}`));
+            const uploadPromises = files?.map((file) => uploadFileGoogleStorage(file, `${newPost.id}${Date.now()}`));
             Promise.all(uploadPromises)
                 .then((fileUrls) => {
                     fileUrls?.map((item: any, index: number) => {

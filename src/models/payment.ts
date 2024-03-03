@@ -8,8 +8,13 @@ export const Payment = database.define('pagamento', {
     parcelado: { type: Sequelize.BOOLEAN, allowNull: true },
     quantidade_parcelas: { type: Sequelize.INTEGER, allowNull: true },
     id_boleto: { type: Sequelize.INTEGER, allowNull: true },
+    status: { type: Sequelize.TEXT, allowNull: true },
+    status_detail: { type: Sequelize.TEXT, allowNull: true },
     pagamento_confirmado: { type: Sequelize.BOOLEAN, allowNull: false },
     data_pagamento_confirmado: { type: Sequelize.DATEONLY, allowNull: true },
+    mp_id: { type: Sequelize.INTEGER, allowNull: false },
+    pix_qrcode: { type: Sequelize.TEXT, allowNull: true },
+
 }, {
     tableName: 'pagamento',
 });
