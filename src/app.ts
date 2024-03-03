@@ -165,8 +165,8 @@ app.post("/process_payment", async (req, res) => {
             })
         })
         .catch(function (error: any) {
-            console.error(error);
-            res.status(400)
+            console.error(`ERRO aqui ${error}`);
+            return res.status(400).json({status: 400, message: error})
         });
 });
 
