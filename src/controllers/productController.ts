@@ -117,7 +117,7 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
 
 
         if (files) {
-            const uploadPromises = files?.map((file) => uploadFileGoogleStorage(file, `${newPost.id}${Date.now()}`));
+            const uploadPromises = files?.map(async (file) => await uploadFileGoogleStorage(file, `${newPost.id}${Date.now()}`));
             Promise.all(uploadPromises)
                 .then((fileUrls) => {
                     fileUrls?.map((item: any, index: number) => {

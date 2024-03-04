@@ -1,6 +1,6 @@
 interface PedidoRequest {
   id?: number;
-  cliente:number;
+  clienteId:number;
   produtos: Productos[];
   endereco:Endereco
 }

@@ -46,7 +46,6 @@ export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorn
                         const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-thumb.jpg`;
                         const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
                         fs.unlinkSync(path);
-                        fs.unlinkSync(resizedImagePath);
 
                         resolve({ url: fileUrl2, thumbnail: fileUrl })
 

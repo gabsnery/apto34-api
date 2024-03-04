@@ -37,7 +37,7 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             Pedido.create({
                 idPedidoStatus: 1,
                 data_pedido_realizado: Date.now(),
-                idCliente: 1,
+                idCliente: body.clienteId,
                 idEntrega: newDeliver.id,
                 pedido_concluido: false,
             }).then((newOrder: typeof Pedido)=>{

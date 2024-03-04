@@ -159,7 +159,7 @@ app.post("/process_payment", async (req, res) => {
                 id_pagamento_tipo: 1,
                 data_pagamento_confirmado: response.body.date_approved,
                 mp_id: response.body.id,
-                pix_qrcode: response.body.point_of_interaction?.transaction_data.qr_code_base64 || ''
+                pix_qrcode: response.body.point_of_interaction?.transaction_data?.qr_code_base64 || ''
             }).then((newPayment: any) => {
                 res.status(response.status).json(newPayment);
             })
