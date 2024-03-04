@@ -27,7 +27,6 @@ export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorn
         const resizedImagePath = `uploads/${name}-thumb.jpg`;
         const { path } = file;
         const isBucketTrue = (await storage.bucket(bucketName).exists())[0]
-        console.log("🚀 ~ .toFile ~ isBucketTrue:", isBucketTrue)
         if (isBucketTrue) {
             sharp(file.path)
                 .resize(500, 500, { fit: 'inside' })
@@ -52,10 +51,34 @@ export const uploadFileGoogleStorage = (file: any, name: string): Promise<retorn
                     })
 
                 })
-        } 
+        }
         else { // <-- note `e` has explicit `unknown` type
-            console.error(`Storage não encontrato`)
-            return uploadFile(file, `${name}`)
+            const resizedImagePath = `uploads/thumbnail/${name}-diminuido.jpg`;
+            const { path } = file;
+            sharp(file.path)
+                .resize(500, 500, { fit: 'inside' })
+                .toFile(resizedImagePath, async (err, info) => {
+    
+    
+                    const fileUrl = `http://localhost:${process.env.PORT}/uploads/thumbnail/${name}-diminuido.jpg`;
+                    const fileUrl2 = `http://localhost:${process.env.PORT}/uploads/${name}.jpg`;
+                    console.log("🚀 ~ .toFile ~ file.path:", file.path)
+                    fs.rename(file.path, `uploads/${name}.jpg`,
+                        (error: any) => {
+                            if (error) {
+                                // Show the error 
+                                console.log(error);
+                            }
+                            else {
+                                // List all the filenames after renaming 
+                                console.log("\nFile Renamed\n");
+                                // List all the filenames after renaming 
+                            }
+                        });
+    
+                    resolve({ url: fileUrl2, thumbnail: fileUrl })
+                })
+    
         }
     });
 };
@@ -72,12 +95,22 @@ export const uploadFile = (file: any, name: string): Promise<retorno> => {
             .resize(500, 500, { fit: 'inside' })
             .toFile(resizedImagePath, async (err, info) => {
 
+
                 const fileUrl = `http://localhost:3005/uploads/thumbnail/${name}-diminuido.jpg`;
                 const fileUrl2 = `http://localhost:3005/uploads/${name}.jpg`;
-                fs.rename(file.path, `uploads/${name}.jpg`, async (err: any, info: any) => {
-                    console.log("🚀 ~ file: upload.ts:76 ~ fs.rename ~ err:", err)
-                    console.log("🚀 ~ file: upload.ts:76 ~ fs.rename ~ info:", info)
-                })
+                console.log("🚀 ~ .toFile ~ file.path:", file.path)
+                fs.rename(file.path, `uploads/${name}.jpg`,
+                    (error: any) => {
+                        if (error) {
+                            // Show the error 
+                            console.log(error);
+                        }
+                        else {
+                            // List all the filenames after renaming 
+                            console.log("\nFile Renamed\n");
+                            // List all the filenames after renaming 
+                        }
+                    });
 
                 resolve({ url: fileUrl2, thumbnail: fileUrl })
             })

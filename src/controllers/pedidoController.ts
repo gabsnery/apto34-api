@@ -14,7 +14,6 @@ const router = express.Router();
 
 
 async function postPedido(req: Request, res: Response, next: NextFunction) {
-    console.log("🚀 ~ req:", req.body)
     const body = (req.body) as PedidoRequest;
     Address.create({
         cep: body.endereco.cep,
@@ -24,7 +23,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
         bairro: body.endereco.bairro,
         id_cidade: 1,
     }).then((newAddress: typeof Address) => {
-        console.log("🚀 ~ newAddress:", newAddress)
         Deliver.create({
             id_entrega_status: 1,
             valor_frete: 111,
@@ -33,7 +31,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             idTransportadora: 1,
             idTelefone: 1,
         }).then((newDeliver: typeof Deliver) => {
-            console.log("🚀 ~ newDeliver:", newDeliver)
             Pedido.create({
                 idPedidoStatus: 1,
                 data_pedido_realizado: Date.now(),

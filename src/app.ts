@@ -58,7 +58,7 @@ app.post("/login", async (req, res) => {
         }
         res.status(400).send("Invalid Credentials");
     } catch (err) {
-        console.log(err);
+        return res.status(400).json({status: 400, message: err})
     }
 });
 app.post("/register", async (req, res) => {
@@ -86,16 +86,13 @@ app.post("/mercado_pago", async (req, res) => {
     var mercadopago = require('mercadopago');
     mercadopago.configure({
         access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN
-    });
+    })
 
     mercadopago.preferences.create(req.body)
         .then(function (preferencia: any) {
-            console.log("🚀 ~ preferencia:", preferencia)
             res.status(201).json(preferencia.body);
         }).catch(function (error: any) {
-            console.log("🚀 ~ error:", error)
-            res.status(400)
-
+            return res.status(400).json({status: 400, message: error})
         });
 
 });
@@ -103,7 +100,7 @@ app.post("/mercado_pago", async (req, res) => {
 app.post("/card_token", async (req, res) => {
     MercadoPago.configure({
         access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || ''
-    });
+    })
 
 
     const teste = req.body
@@ -117,8 +114,7 @@ app.post("/card_token", async (req, res) => {
         res.status(response.status).json(response.body);
     })
         .catch(function (error: any) {
-            console.error(error);
-            res.status(400)
+            return res.status(400).json({status: 400, message: error})
         });
 })
 app.post("/webhook", async (req, res) => {
@@ -128,7 +124,6 @@ app.post("/webhook", async (req, res) => {
     });
     if (teste.type && teste?.data?.id) {
         MercadoPago.payment.get(teste.data.id || 0).then(x => {
-            console.log("🚀 ~ MercadoPago.payment.get ~ x:", x)
         })
     }
 
@@ -149,7 +144,6 @@ app.post("/process_payment", async (req, res) => {
 
     mercadopago.payment.save(req.body)
         .then(function (response: { body: payment, status: any }) {
-            console.log("🚀 ~ body:", response.body)
             Payment.create({
                 parcelado: (response.body.installments ? response.body.installments : 0) > 0 ? true : false,
                 quantidade_parcelas: response.body.installments || 0,
@@ -165,7 +159,6 @@ app.post("/process_payment", async (req, res) => {
             })
         })
         .catch(function (error: any) {
-            console.error(`ERRO aqui ${error}`);
             return res.status(400).json({status: 400, message: error})
         });
 });
