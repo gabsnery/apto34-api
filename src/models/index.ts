@@ -4,7 +4,7 @@ const hostname = "127.0.0.1";
 const port = 3005;
 //index.js
 (async () => {
-  const database = require("./config/database");
+  const database = require("../config/database");
   database.sequelize.sync()
     .then((e: any) => {
       console.log(e);
