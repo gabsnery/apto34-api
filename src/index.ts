@@ -17,6 +17,16 @@ import { Client } from "./models/client";
 import { Payment } from "./models/payment";
 import { payment, webhook } from "./types/mp_payment";
 
+(async () => {
+  const database = require("./config/database");
+  database.sequelize.sync()
+    .then((e: any) => {
+      console.log('funciona',e);
+    })
+    .catch((e: any) => {
+      console.log('funciona',e);
+    });
+})();
 const http = require("http");
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -38,15 +48,7 @@ app.post("/welcome", auth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
 app.get("/", (req, res) => {
-  const database = require("./config/database");
-  database.sequelize
-    .sync()
-    .then((e: any) => {
-      res.status(200).send(`"Welcome bom ",${e}`);
-    })
-    .catch((e: any) => {
-      res.status(200).send(`"Welcome ruim ",${e}`);
-    });
+  res.status(200).send("Welcome 🙌 ");
 });
 
 app.post("/login", async (req, res) => {

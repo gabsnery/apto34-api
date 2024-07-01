@@ -4,17 +4,17 @@ import { Photo } from './photo';
 import { ProdutoSubcategoria } from './ProdutoSubcategoria';
 import { Size } from './size';
 const database = require('../config/database');
-export const Product = database.define('produto', {
+export const Product = database.sequelize.define('produto', {
   nome: { type: Sequelize.STRING, default: null },
   descricao: { type: Sequelize.STRING },
   desativado: { type: Sequelize.BOOLEAN },
   valor_produto: { type: Sequelize.FLOAT },
-  quantity: { type: Sequelize.NUMBER },
+  quantity: { type: Sequelize.INTEGER },
 })
 
 
 
-const ProdutoTemSubcategoria = database.define('produto_tem_subcategoria', {
+const ProdutoTemSubcategoria = database.sequelize.define('produto_tem_subcategoria', {
 }, {
   tableName: 'produto_tem_subcategoria',
   timestamps: false,
@@ -28,7 +28,7 @@ Product.belongsToMany(ProdutoSubcategoria, {
   as: 'produtoSubcategoria',
 });
 
-export const Produto_tem_cor = database.define('produto_tem_cor', {
+export const Produto_tem_cor = database.sequelize.define('produto_tem_cor', {
   quantidade: { type: Sequelize.INTEGER },
 }, { timestamps: false });
 Product.belongsToMany(Color, {
@@ -42,7 +42,7 @@ Color.belongsToMany(Product, {
   as: 'product'
 });
 
-export const Produto_tem_size = database.define('produto_tem_tamanho', {
+export const Produto_tem_size = database.sequelize.define('produto_tem_tamanho', {
   quantity: { type: Sequelize.INTEGER },
 }, { timestamps: false });
 Product.belongsToMany(Size, {
@@ -56,7 +56,7 @@ Size.belongsToMany(Product, {
   as: 'product'
 });
 
-export const produto_tem_photo = database.define('produto_tem_photo', {
+export const produto_tem_photo = database.sequelize.define('produto_tem_photo', {
   is_cover: { type: Sequelize.BOOLEAN },
 }, { timestamps: false });
 Product.belongsToMany(Photo, {

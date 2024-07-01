@@ -154,10 +154,8 @@ async function patchProduct(req: Request, res: Response, next: NextFunction) {
 }
 const getLocalImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const id = req.params.id;
-    console.log('entrou aqui')
     const photo = Photo.findOne({
         where: { id: decryptId(id) }})
-    console.log("🚀 ~ getLocalImage ~ photo:", photo)
     try {
         const [url] = await cloudStorage.bucket(bucketName).file('1831689900393785-diminuido.jpg').getSignedUrl({
           version: 'v4',

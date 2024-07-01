@@ -54,7 +54,6 @@ export const uploadFileGoogleStorage = (
               throw e;
             });
           Promise.all([teste, teste2]).then((item) => {
-            console.log("🚀 ~ Promise.all ~ item:", item);
             const fileUrl = `https://storage.googleapis.com/${bucketName}/${name}-thumb.jpg`;
             const fileUrl2 = `https://storage.googleapis.com/${bucketName}/${name}.jpg`;
             fs.unlinkSync(path);
@@ -77,7 +76,6 @@ export const uploadFileGoogleStorage = (
         .toFile(resizedImagePath, async (err, info) => {
           const fileUrl = `http://localhost:${process.env.PORT}/uploads/thumbnail/${name}-diminuido.jpg`;
           const fileUrl2 = `http://localhost:${process.env.PORT}/uploads/${name}.jpg`;
-          console.log("🚀 ~ .toFile ~ file.path:", file.path);
           fs.rename(file.path, `uploads/${name}.jpg`, (error: any) => {
             if (error) {
               // Show the error

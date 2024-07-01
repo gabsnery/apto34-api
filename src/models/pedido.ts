@@ -6,7 +6,7 @@ import { Payment } from './payment';
 const database = require('../config/database');
 
 // Definindo o modelo para a tabela "pedido"
-export const Pedido = database.define('pedido', {
+export const Pedido = database.sequelize.define('pedido', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   idPedidoStatus: { type: Sequelize.INTEGER, allowNull: false },
   idNotaFiscal: { type: Sequelize.INTEGER, allowNull: true },

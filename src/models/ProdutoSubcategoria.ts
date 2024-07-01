@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize'
 import { ProdutoCategoria } from './ProdutoCategoria';
 const database = require('../config/database');
-export const ProdutoSubcategoria = database.define('produto_subcategoria', {
+export const ProdutoSubcategoria = database.sequelize.define('produto_subcategoria', {
     data_criacao: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.NOW,

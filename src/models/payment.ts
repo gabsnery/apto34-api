@@ -2,7 +2,7 @@ import Sequelize from 'sequelize';
 const database = require('../config/database');
 
 // Definindo o modelo para a tabela "pagamento"
-export const Payment = database.define('pagamento', {
+export const Payment = database.sequelize.define('pagamento', {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
     id_pagamento_tipo: { type: Sequelize.INTEGER, allowNull: false },
     parcelado: { type: Sequelize.BOOLEAN, allowNull: true },
@@ -19,7 +19,7 @@ export const Payment = database.define('pagamento', {
     tableName: 'pagamento',
 });
 
-export const PagamentoTipo = database.define('pagamento_tipo', {
+export const PagamentoTipo = database.sequelize.define('pagamento_tipo', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     data_criacao: { type: Sequelize.DATE, allowNull: true },
     tipo_pagamento: { type: Sequelize.STRING(45), allowNull: false },
@@ -28,7 +28,7 @@ export const PagamentoTipo = database.define('pagamento_tipo', {
 }, {
     tableName: 'pagamento_tipo',
 });
-export const Boleto = database.define('boleto', {
+export const Boleto = database.sequelize.define('boleto', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     data_emissao_boleto: { type: Sequelize.DATE, allowNull: false },
     numero_boleto: { type: Sequelize.STRING(48), allowNull: false, unique: true },

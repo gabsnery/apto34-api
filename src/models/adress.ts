@@ -2,7 +2,7 @@ import Sequelize from 'sequelize';
 import { City } from './city';
 const database = require('../config/database');
 
-export const Address = database.define('endereco', {
+export const Address = database.sequelize.define('endereco', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   cep: { type: Sequelize.STRING(8), allowNull: false },
   logradouro: { type: Sequelize.STRING(100), allowNull: false },

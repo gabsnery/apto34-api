@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize'
 const database = require('../config/database');
   
-export const ProdutoCategoria = database.define('produto_categoria', {
+export const ProdutoCategoria = database.sequelize.define('produto_categoria', {
     id: {
       type: Sequelize.INTEGER,
       allowNull: false,

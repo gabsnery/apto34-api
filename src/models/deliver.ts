@@ -3,7 +3,7 @@ import { Address } from './adress';
 const database = require('../config/database');
 
 // Definindo o modelo para a tabela "entrega"
-export const Deliver = database.define('entrega', {
+export const Deliver = database.sequelize.define('entrega', {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true  },
     id_entrega_status: { type: Sequelize.INTEGER, allowNull: false },
     data_entrega_inicio: { type: Sequelize.DATE, allowNull: true },
@@ -19,7 +19,7 @@ export const Deliver = database.define('entrega', {
     tableName: 'entrega',
 });
 
-export const EntregaStatus = database.define('entrega_status', {
+export const EntregaStatus = database.sequelize.define('entrega_status', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     data_criacao: { type: Sequelize.DATE, allowNull: true },
     status_entrega: { type: Sequelize.STRING(45), allowNull: false },
@@ -28,7 +28,7 @@ export const EntregaStatus = database.define('entrega_status', {
 }, {
     tableName: 'entrega_status',
 });
-export const Telefone = database.define('telefone', {
+export const Telefone = database.sequelize.define('telefone', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     telefone: { type: Sequelize.STRING(14), allowNull: false, unique: true },
     id_ddd: { type: Sequelize.INTEGER, allowNull: false },
@@ -37,7 +37,7 @@ export const Telefone = database.define('telefone', {
     timestamps: false,
 });
 
-export const Transportadora = database.define('transportadora', {
+export const Transportadora = database.sequelize.define('transportadora', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     data_criacao: { type: Sequelize.DATE, allowNull: false },
     id_unidade: { type: Sequelize.INTEGER, allowNull: false, unique: true },
@@ -48,7 +48,7 @@ export const Transportadora = database.define('transportadora', {
     timestamps: false,
 });
 // Definindo o modelo para a tabela "unidade"
-export const Unidade = database.define('unidade', {
+export const Unidade = database.sequelize.define('unidade', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     idEmpresa: { type: Sequelize.INTEGER, allowNull: false },
     data_criacao: { type: Sequelize.DATE, allowNull: false },
@@ -65,7 +65,7 @@ export const Unidade = database.define('unidade', {
     underscored: true,
   });
   
-  export const Empresa = database.define('empresa', {
+  export const Empresa = database.sequelize.define('empresa', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     data_criacao: { type: Sequelize.DATE, allowNull: false },
     nome: { type: Sequelize.STRING(255), allowNull: false },
@@ -80,7 +80,7 @@ export const Unidade = database.define('unidade', {
   
 Transportadora.belongsTo(Unidade, { foreignKey: 'id_unidade', as: 'unidade' });
 
-export const DDD = database.define('ddd', {
+export const DDD = database.sequelize.define('ddd', {
     id: { type: Sequelize.INTEGER, primaryKey: true },
     ddd: { type: Sequelize.INTEGER, allowNull: false, unique: true },
 }, {

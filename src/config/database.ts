@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
-let database={}
+const database:any={}
+require('dotenv').config();
+
 //database wide options
 let opts = {
     dialect: 'mysql',
@@ -9,7 +11,23 @@ let opts = {
         freezeTableName: true,
     }
 }
+//const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.DATABASE_USER,process.env.DATABASE_PASSWORD, opts);
 
-database = new Sequelize(process.env.DATABASE_NAME, process.env.DATABASE_USER,process.env.DATABASE_PASSWORD, opts);
+const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.DATABASE_USER, process.env.DATABASE_PASSWORD, {
+    host: process.env.DATABASE_HOST,
+    dialect: 'mysql',
+    port: process.env.DATABASE_PORT,
+    define: {
+        freezeTableName: true,
+    }
+  });
 
-module.exports = database;
+database.sequelize = sequelize;
+database.Sequelize = Sequelize;
+
+
+
+module.exports = {
+    Sequelize,
+    sequelize
+}

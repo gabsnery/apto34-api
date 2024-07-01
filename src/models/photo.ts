@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize'
 const database = require('../config/database');
-export const Photo = database.define('photo', {
+export const Photo = database.sequelize.define('photo', {
     url: {
       type: Sequelize.STRING(255),
       allowNull: false

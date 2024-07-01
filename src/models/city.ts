@@ -3,7 +3,7 @@ import { State } from './state';
 const database = require('../config/database');
 
 // Definindo o modelo para a tabela "cidade"
-export const City = database.define('cidade', {
+export const City = database.sequelize.define('cidade', {
   id_cidade: { type: Sequelize.INTEGER, primaryKey: true },
   cidade: { type: Sequelize.STRING(60), allowNull: false },
   id_estado: { type: Sequelize.INTEGER, allowNull: false },
