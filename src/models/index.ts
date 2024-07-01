@@ -5,8 +5,7 @@ const port = 3005;
 //index.js
 (async () => {
   const database = require("./config/database");
-  database.sequelize
-    .sync()
+  database.sequelize.sync()
     .then((e: any) => {
       console.log(e);
     })
