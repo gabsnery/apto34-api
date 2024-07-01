@@ -8,7 +8,6 @@ import * as MercadoPago from 'mercadopago';
 import morgan from 'morgan';
 import categoryRouter from './controllers/categoryController';
 import colorRouter from './controllers/colorController';
-import imageRouter from './controllers/imageController';
 import pedidoRouter from './controllers/pedidoController';
 import productRouter from './controllers/productController';
 import sizeRouter from './controllers/sizeController';
@@ -177,7 +176,6 @@ app.use('/api/Subcategorias/', subCategoryRouter);
 app.use('/api/category/', categoryRouter);
 app.use('/api/order/', pedidoRouter);
 app.use('/uploads', express.static('uploads'));
-app.use("/image",imageRouter);
 
 
 // Inicia o servidor
