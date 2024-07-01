@@ -1,4 +1,4 @@
-interface Category {
+export interface Category {
     id?: number;
     data_criacao?: Date;
     categoria: string;

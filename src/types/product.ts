@@ -1,3 +1,5 @@
+import { ProdutoSubcategoriaResponse } from "./subcategory";
+
 interface ProductResponse {
   id?: number;
   nome: string;

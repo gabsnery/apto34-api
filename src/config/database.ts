@@ -10,6 +10,6 @@ var opts = {
     }
 }
 
-const sequelize = new Sequelize(process.env.DATABASE_NAME, process.env.DATABASE_USER,process.env.DATABASE_PASSWORD, opts);
+const database = new Sequelize(process.env.DATABASE_NAME, process.env.DATABASE_USER,process.env.DATABASE_PASSWORD, opts);
 
-module.exports = sequelize;
+module.exports = database;

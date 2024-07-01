@@ -5,6 +5,8 @@ import auth from '../middleware/auth';
 import { Color } from '../models/color';
 import { ProdutoSubcategoria } from '../models/ProdutoSubcategoria';
 import { ProdutoCategoria } from '../models/ProdutoCategoria';
+import { ProdutoSubcategoriaResponse } from '../types/subcategory';
+import { Category } from '../types/category';
 const database = require('../config/database');
 
 const router = express.Router();
