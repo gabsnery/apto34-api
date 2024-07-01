@@ -5,8 +5,6 @@ const port = 3005;
 //index.js
 (async () => {
   const database = require('./config/database');
-  const Client = require('./models/user');
-
     database.sequelize.sync().then((e:any)=>{console.log(e) }).catch((e:any )=>{ console.log(e) });
 })();
 
