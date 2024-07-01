@@ -4,7 +4,7 @@
   "description": "Esse é o backend do nosso ecommerce",
   "main": "index.ts",
   "scripts": {
-    "dev": "npx nodemon src/server.ts --watch 'src/**' -e ts",
+    "dev": "npx nodemon src/index.ts --watch 'src/**' -e ts",
     "start": "node dist/index.js",
     "postinstall": "tsc",
     "watch-node": "nodemon dist/index.js",
