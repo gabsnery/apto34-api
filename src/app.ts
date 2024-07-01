@@ -12,6 +12,7 @@ import sizeRouter from './controllers/sizeController';
 import subCategoryRouter from './controllers/subCategoryController';
 import categoryRouter from './controllers/categoryController';
 import pedidoRouter from './controllers/pedidoController';
+import imageRouter from './controllers/imageController';
 import * as MercadoPago from 'mercadopago';
 import { payment, webhook } from './types/mp_payment';
 import { Payment } from './models/payment';
@@ -37,7 +38,12 @@ app.use(express.json());
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome 🙌 ");
 });
-// Login
+
+
+
+
+
+
 app.post("/login", async (req, res) => {
     try {
         const { email, senha } = req.body;
@@ -171,5 +177,6 @@ app.use('/api/Subcategorias/', subCategoryRouter);
 app.use('/api/category/', categoryRouter);
 app.use('/api/order/', pedidoRouter);
 app.use('/uploads', express.static('uploads'));
+app.use("/image",imageRouter);
 
 export default app;

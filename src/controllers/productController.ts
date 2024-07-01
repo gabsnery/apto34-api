@@ -1,16 +1,14 @@
-import bcrypt from 'bcryptjs';
-import { Request, Response, NextFunction } from 'express';
-import { Product, produto_tem_photo, Produto_tem_size, Produto_tem_cor } from '../models/product';
-import express from 'express';
-import auth from '../middleware/auth';
+import { Storage } from '@google-cloud/storage';
+import express, { NextFunction, Request, Response } from 'express';
+import { ProdutoCategoria } from '../models/ProdutoCategoria';
+import { ProdutoSubcategoria } from '../models/ProdutoSubcategoria';
 import { Color } from '../models/color';
 import { Photo } from '../models/photo';
-import { ProdutoSubcategoria } from '../models/ProdutoSubcategoria';
-import { ProdutoCategoria } from '../models/ProdutoCategoria';
-import ProductResponse from '../types/product';
-import { uploadFile, uploadFileGoogleStorage } from '../utils/upload';
+import { Product, Produto_tem_cor, Produto_tem_size, produto_tem_photo } from '../models/product';
 import { Size } from '../models/size';
-import { Op } from 'sequelize';
+import ProductResponse from '../types/product';
+import { uploadFileGoogleStorage } from '../utils/upload';
+import { decryptId, encryptId } from '../utils/encrypt';
 const database = require('../config/database');
 const Multer = require('multer');
 
@@ -25,6 +23,13 @@ const router = express.Router();
 interface MulterRequest extends Request {
     files?: any[];
 }
+// Configurações do Google Cloud Storage
+const cloudStorage = new Storage({
+    keyFilename: process.env.GOOGLE_STORAGE_KEYFILENAME,
+});
+
+const bucketName = process.env.GOOGLE_STORAGE_BUCKETNAME || ''; // Nome do seu bucket no Google Cloud Storage
+
 async function getProduct(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id;
 
@@ -121,10 +126,10 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
             Promise.all(uploadPromises)
                 .then((fileUrls) => {
                     fileUrls?.map((item: any, index: number) => {
-                        Photo.create({ url: item.url, thumbnail: false }).then(async (newPhoto: any) => {
+                        Photo.create({ url: item.url, thumbnail: false,file_name:item.fileName,host:item.host }).then(async (newPhoto: any) => {
                             produto_tem_photo.create({ produtoId: newPost.id, photoId: newPhoto.id, is_cover: index === 0 })
                         }).catch((e: any) => res.status(400))
-                        Photo.create({ url: item.thumbnail, thumbnail: true }).then(async (newPhoto: any) => {
+                        Photo.create({ url: item.thumbnail, thumbnail: true,file_name:item.thumbFileName,host:item.host  }).then(async (newPhoto: any) => {
                             produto_tem_photo.create({ produtoId: newPost.id, photoId: newPhoto.id, is_cover: index === 0 })
                         }).catch((e: any) => res.status(400))
                     })
@@ -147,7 +152,40 @@ async function patchProduct(req: Request, res: Response, next: NextFunction) {
     else
         res.sendStatus(404);
 }
+const getLocalImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const id = req.params.id;
+    console.log('entrou aqui')
+    const photo = Photo.findOne({
+        where: { id: decryptId(id) }})
+    console.log("🚀 ~ getLocalImage ~ photo:", photo)
+    try {
+        const [url] = await cloudStorage.bucket(bucketName).file('1831689900393785-diminuido.jpg').getSignedUrl({
+          version: 'v4',
+          action: 'read',
+          expires: Date.now() + 15 * 60 * 1000, // URL válida por 15 minutos
+        });
+        res.json({ url: url });
+      } catch (error:any) {
+        throw new Error(`Erro ao gerar a URL assinada: ${error.message}`);
+      }
+/* 
+  const fullPath = path.join(__dirname, '../rebelmoon.jpg');
+  const [url] = await storage.bucket(bucketName).file(filename).getSignedUrl(options);
 
+  // Verifica se a imagem existe
+  fs.stat(fullPath, (err:any, stats:any) => {
+    if (err || !stats.isFile()) {
+      res.status(404).send('Imagem não encontrada');
+      return;
+    }
+
+    // Define o tipo de conteúdo como imagem e envia o arquivo
+    res.sendFile(fullPath);
+  }); */
+};
+
+
+router.get('/image', getLocalImage);
 router.get('/:id', getProduct);
 
 router.get('/', getProducts);
@@ -184,7 +222,7 @@ async function transformProducts(products: any[]): Promise<ProductResponse[]> {
         const transformedProduct: ProductResponse = {
             id: product.id,
             produtoSubcategoria: transformedSubcategories,
-            photos: product.photo?.filter((ite: any) => ite.thumbnail === false).map((item: any) => item.url),
+            photos: product.photo?.filter((ite: any) => ite.thumbnail === false).map((item: any) => encryptId(item.id.toString())),
             thumbnails: product.photo?.filter((ite: any) => ite.thumbnail === true).map((item: any) => item.url),
             cores: product.color?.map((item: any) => {
                 return ({

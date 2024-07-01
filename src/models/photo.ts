@@ -12,7 +12,15 @@ export const Photo = database.define('photo', {
     thumbnail: {
       type: Sequelize.BOOLEAN,
       defaultValue: false
-    }
+    },
+    file_name: {
+      type: Sequelize.STRING(255),
+      allowNull: true
+    },
+    host: {
+      type: Sequelize.STRING(255),
+      allowNull: true
+    },
   }, {
     tableName: 'photo',
     timestamps: false
