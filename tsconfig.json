@@ -10,5 +10,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "src/models/index.ts"]
+  "include": ["src/**/*", "src/index.ts"]
 }
