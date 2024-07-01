@@ -38,6 +38,9 @@ app.use(express.json());
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome 🙌 ");
 });
+app.get("/",  (req, res) => {
+    res.status(200).send("Welcome 🙌 ");
+});
 
 
 
