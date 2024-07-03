@@ -8,7 +8,7 @@ const upload = Multer({ dest: "uploads/" }); // Diretório temporário para arma
 
 // Configurações do Google Cloud Storage
 const storage = new Storage({
-  keyFilename: process.env.GOOGLE_STORAGE_KEYFILENAME,
+  keyFile:JSON.parse(process.env.GOOGLE_STORAGE_KEYFILENAME||''),
 });
 
 const bucketName = process.env.GOOGLE_STORAGE_BUCKETNAME || ""; // Nome do seu bucket no Google Cloud Storage
