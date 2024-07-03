@@ -24,9 +24,7 @@ interface MulterRequest extends Request {
     files?: any[];
 }
 // Configurações do Google Cloud Storage
-const cloudStorage = new Storage({
-    keyFile:JSON.parse(process.env.GOOGLE_STORAGE_KEYFILENAME||''),
-});
+const cloudStorage = new Storage({credentials:JSON.parse(process.env.GOOGLE_STORAGE_KEYFILENAME||'') ||{}});
 
 const bucketName = process.env.GOOGLE_STORAGE_BUCKETNAME || ''; // Nome do seu bucket no Google Cloud Storage
 

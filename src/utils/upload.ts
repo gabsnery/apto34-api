@@ -7,9 +7,7 @@ const Multer = require("multer");
 const upload = Multer({ dest: "uploads/" }); // Diretório temporário para armazenar o arquivo antes do upload
 
 // Configurações do Google Cloud Storage
-const storage = new Storage({
-  keyFile:JSON.parse(process.env.GOOGLE_STORAGE_KEYFILENAME||''),
-});
+const storage = new Storage({credentials:JSON.parse(process.env.GOOGLE_STORAGE_KEYFILENAME||'') ||{}});
 
 const bucketName = process.env.GOOGLE_STORAGE_BUCKETNAME || ""; // Nome do seu bucket no Google Cloud Storage
 
@@ -25,7 +23,10 @@ export const uploadFileGoogleStorage = (
   file: any,
   name: string
 ): Promise<retorno> => {
+  
   return new Promise(async (resolve, reject) => {
+
+
     if (!file) {
       reject(new Error("Nenhum arquivo foi enviado."));
     }
