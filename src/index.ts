@@ -21,10 +21,8 @@ import { payment, webhook } from "./types/mp_payment";
   const database = require("./config/database");
   database.sequelize.sync()
     .then((e: any) => {
-      console.log('funciona',e);
     })
     .catch((e: any) => {
-      console.log('funciona',e);
     });
 })();
 const http = require("http");

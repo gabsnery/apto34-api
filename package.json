@@ -25,13 +25,13 @@
     "@types/mysql": "^2.15.21",
     "@types/node": "^20.3.2",
     "nodemon": "^2.0.22",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.1.6"
   },
   "dependencies": {
     "@google-cloud/storage": "^6.12.0",
-    "@types/bcryptjs": "^2.4.2",
     "@pagarme/sdk": "^5.8.1",
+    "@types/bcryptjs": "^2.4.2",
     "api": "^6.1.0",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",

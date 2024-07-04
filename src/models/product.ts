@@ -19,14 +19,18 @@ const ProdutoTemSubcategoria = database.sequelize.define('produto_tem_subcategor
   tableName: 'produto_tem_subcategoria',
   timestamps: false,
 });
-
-ProdutoSubcategoria.belongsToMany(Product, {
-  through: ProdutoTemSubcategoria,
-});
 Product.belongsToMany(ProdutoSubcategoria, {
   through: ProdutoTemSubcategoria,
   as: 'produtoSubcategoria',
+  foreignKey: 'produtoId',
 });
+ProdutoSubcategoria.belongsToMany(Product, {
+  through: ProdutoTemSubcategoria,
+  foreignKey: 'produtoSubcategoriumId',
+  as: 'product'
+});
+
+
 
 export const Produto_tem_cor = database.sequelize.define('produto_tem_cor', {
   quantidade: { type: Sequelize.INTEGER },
