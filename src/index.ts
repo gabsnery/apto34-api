@@ -11,6 +11,7 @@ import colorRouter from "./controllers/colorController";
 import pedidoRouter from "./controllers/pedidoController";
 import productRouter from "./controllers/productController";
 import sizeRouter from "./controllers/sizeController";
+import bannerRouter from "./controllers/bannerController";
 import subCategoryRouter from "./controllers/subCategoryController";
 import auth from "./middleware/auth";
 import { Client } from "./models/client";
@@ -23,6 +24,7 @@ import { payment, webhook } from "./types/mp_payment";
     .then((e: any) => {
     })
     .catch((e: any) => {
+      console.log('erro',e)
     });
 })();
 const http = require("http");
@@ -188,6 +190,7 @@ app.use("/api/sizes/", sizeRouter);
 app.use("/api/Subcategorias/", subCategoryRouter);
 app.use("/api/category/", categoryRouter);
 app.use("/api/order/", pedidoRouter);
+app.use("/api/banner/", bannerRouter);
 app.use("/uploads", express.static("uploads"));
 
 // Inicia o servidor
