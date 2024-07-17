@@ -20,11 +20,11 @@ import { payment, webhook } from "./types/mp_payment";
 
 (async () => {
   const database = require("./config/database");
-  database.sequelize.sync()
-    .then((e: any) => {
-    })
+  database.sequelize
+    .sync()
+    .then((e: any) => {})
     .catch((e: any) => {
-      console.log('erro',e)
+      console.log("erro", e);
     });
 })();
 const http = require("http");
@@ -156,6 +156,7 @@ app.post("/process_payment", async (req, res) => {
   MercadoPago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
   });
+  console.log("🚀 ~ app.post ~ req.body:", req.body)
 
   mercadopago.payment
     .save(req.body)
@@ -176,10 +177,12 @@ app.post("/process_payment", async (req, res) => {
           response.body.point_of_interaction?.transaction_data
             ?.qr_code_base64 || "",
       }).then((newPayment: any) => {
+        console.log("🚀 ~ newPayment:", newPayment)
         res.status(response.status).json(newPayment);
       });
     })
     .catch(function (error: any) {
+      console.log("🚀 ~ app.post ~ error:", error)
       return res.status(400).json({ status: 400, message: error });
     });
 });
@@ -189,7 +192,7 @@ app.use("/api/color/", colorRouter);
 app.use("/api/sizes/", sizeRouter);
 app.use("/api/Subcategorias/", subCategoryRouter);
 app.use("/api/category/", categoryRouter);
-app.use("/api/order/", pedidoRouter);
+app.use("/api/order/",  pedidoRouter);
 app.use("/api/banner/", bannerRouter);
 app.use("/uploads", express.static("uploads"));
 

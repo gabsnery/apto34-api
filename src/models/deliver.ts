@@ -4,7 +4,6 @@ const database = require('../config/database');
 
 // Definindo o modelo para a tabela "entrega"
 export const Deliver = database.sequelize.define('entrega', {
-    id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true  },
     id_entrega_status: { type: Sequelize.INTEGER, allowNull: false },
     data_entrega_inicio: { type: Sequelize.DATE, allowNull: true },
     valor_frete: { type: Sequelize.FLOAT, allowNull: true },
