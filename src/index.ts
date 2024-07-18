@@ -17,6 +17,7 @@ import auth from "./middleware/auth";
 import { Client } from "./models/client";
 import { Payment } from "./models/payment";
 import { payment, webhook } from "./types/mp_payment";
+import { Pedido } from "./models/pedido";
 
 (async () => {
   const database = require("./config/database");
@@ -146,7 +147,8 @@ app.post("/webhook", async (req, res) => {
     MercadoPago.payment.get(teste.data.id || 0).then((x) => {});
   }
 });
-app.post("/process_payment", async (req, res) => {
+app.post("/process_payment/:orderId", async (req, res) => {
+  const orderId = req.params.orderId;
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -156,7 +158,7 @@ app.post("/process_payment", async (req, res) => {
   MercadoPago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
   });
-  console.log("🚀 ~ app.post ~ req.body:", req.body)
+  console.log("🚀 ~ app.post ~ req.body:", req.body);
 
   mercadopago.payment
     .save(req.body)
@@ -171,18 +173,27 @@ app.post("/process_payment", async (req, res) => {
         status: response.body.status,
         status_detail: response.body.status_detail,
         id_pagamento_tipo: 1,
+
         data_pagamento_confirmado: response.body.date_approved,
         mp_id: response.body.id,
         pix_qrcode:
           response.body.point_of_interaction?.transaction_data
             ?.qr_code_base64 || "",
       }).then((newPayment: any) => {
-        console.log("🚀 ~ newPayment:", newPayment)
-        res.status(response.status).json(newPayment);
+        console.log("🚀 ~ newPayment:", newPayment);
+        Pedido.update({
+          idPagamento:newPayment.id,
+        }, { where: { id: orderId } })
+          .then((newPayment: any) => {
+            res.status(response.status).json(newPayment);
+          })
+          .catch((error: any) => {
+            return res.status(400).json({ status: 400, message: error });
+          });
       });
     })
     .catch(function (error: any) {
-      console.log("🚀 ~ app.post ~ error:", error)
+      console.log("🚀 ~ app.post ~ error:", error);
       return res.status(400).json({ status: 400, message: error });
     });
 });
@@ -192,7 +203,7 @@ app.use("/api/color/", colorRouter);
 app.use("/api/sizes/", sizeRouter);
 app.use("/api/Subcategorias/", subCategoryRouter);
 app.use("/api/category/", categoryRouter);
-app.use("/api/order/",  pedidoRouter);
+app.use("/api/order/", pedidoRouter);
 app.use("/api/banner/", bannerRouter);
 app.use("/uploads", express.static("uploads"));
 

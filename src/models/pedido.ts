@@ -22,7 +22,7 @@ export const Pedido = database.sequelize.define('pedido', {
 
 
 Pedido.belongsTo(Client, { foreignKey: 'idCliente', as: 'cliente' });
-Pedido.belongsTo(Deliver, { foreignKey: 'idEntrega', as: 'entrega' });
-Pedido.belongsTo(FiscalNote, { foreignKey: 'idNotaFiscal', as: 'notaFiscal' });
-Pedido.belongsTo(Payment, { foreignKey: 'idPagamento', as: 'pagamento' });
+Pedido.belongsTo(Deliver, { foreignKey: 'idEntrega', as: 'entrega',allowNull: false, });
+Pedido.belongsTo(FiscalNote, { foreignKey: 'idNotaFiscal', as: 'notaFiscal',allowNull: false, });
+Pedido.belongsTo(Payment, { foreignKey: 'idPagamento', as: 'pagamento',allowNull: false, });
 /* Pedido.belongsTo(PedidoStatus, { foreignKey: 'idPedidoStatus', as: 'pedidoStatus' }); */

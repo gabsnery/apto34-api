@@ -13,6 +13,7 @@ const router = express.Router();
 
 async function postPedido(req: Request, res: Response, next: NextFunction) {
   const body = req.body as PedidoRequest;
+
   console.log("🚀 ~ body:", body)
   await Address.create({
     cep: body.endereco.cep,
@@ -48,8 +49,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
           data_pedido_realizado: Date.now(),
           idCliente: body.clienteId,
           idEntrega: newDeliver.id,
-          idPagamento:1,
-          idNotaFiscal:1,
           pedido_concluido: false,
         })
           .then((newOrder: typeof Pedido) => {
