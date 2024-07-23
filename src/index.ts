@@ -52,7 +52,8 @@ app.post("/welcome", auth, (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
-app.post("/mercado_pago_webhook/", (req, res) => {
+app.post("/mercado_pago_webhook/",async (req, res) => {
+  console.log("🚀 ~ app.post ~ req:", req)
   const event = req.body as IWebhook;
   console.log("🚀 ~ app.post ~ req.body :", req.body);
   console.log("🚀 ~ app.get ~ event:", event);
