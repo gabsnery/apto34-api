@@ -1,4 +1,4 @@
-export interface webhook {
+export interface IWebhook {
     action?: string
     api_version?: string
     data?: Data

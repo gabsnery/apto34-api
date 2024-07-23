@@ -16,8 +16,9 @@ import subCategoryRouter from "./controllers/subCategoryController";
 import auth from "./middleware/auth";
 import { Client } from "./models/client";
 import { Payment } from "./models/payment";
-import { payment, webhook } from "./types/mp_payment";
+import { IWebhook, payment } from "./types/mp_payment";
 import { Pedido } from "./models/pedido";
+import { Product } from "./models/product";
 
 (async () => {
   const database = require("./config/database");
@@ -50,6 +51,70 @@ app.post("/welcome", auth, (req, res) => {
 });
 app.get("/", (req, res) => {
   res.status(200).send("Welcome 🙌 ");
+});
+app.get("/mercado_pago_webhook/", (req, res) => {
+  const event = req.body as IWebhook;
+  console.log("🚀 ~ app.get ~ event:", event)
+
+  var mercadopago = require("mercadopago");
+  mercadopago.configure({
+    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
+    options: { timeout: 5000, idempotencyKey: Math.floor(Math.random() * 200) },
+  });
+
+  MercadoPago.configure({
+    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
+  });
+  switch (event.type) {
+    case "payment":
+      mercadopago.payment
+        .get(event.data?.id)
+        .then((response: { body: payment; status: any }) => {
+          Payment.update(
+            {
+              parcelado:
+                (response.body.installments ? response.body.installments : 0) >
+                0
+                  ? true
+                  : false,
+              quantidade_parcelas: response.body.installments || 0,
+              pagamento_confirmado: response.body.status === "Aproved",
+              status: response.body.status,
+              status_detail: response.body.status_detail,
+              id_pagamento_tipo: 1,
+
+              data_pagamento_confirmado: response.body.date_approved,
+              mp_id: response.body.id,
+              pix_qrcode:
+                response.body.point_of_interaction?.transaction_data
+                  ?.qr_code_base64 || "",
+            },
+            { where: { mp_id: event.data?.id } }
+          ).then((payment: any) => {
+            Pedido.update(
+              {
+                 pedido_concluido:response.body.status === "Aproved",
+              },
+              { where: { idPagamento: payment.id } }
+            )
+              .then((newPayment: any) => {
+                res.status(response.status).json(newPayment);
+              })
+              .catch((error: any) => {
+                console.log("🚀 ~ ).then ~ error:", error)
+                return res.status(400).json({ status: 400, message: error });
+              });
+          }).catch((error: any) => {
+            console.log("🚀 ~ ).then ~ error:", error)
+            return res.status(400).json({ status: 400, message: error });
+          });
+        })
+        .catch(function (error: any) {
+          console.log("🚀 ~ app.get ~ error:", error)
+          return res.status(400).json({ status: 400, message: error });
+        });
+      break;
+  }
 });
 
 app.post("/login", async (req, res) => {
@@ -139,7 +204,7 @@ app.post("/card_token", async (req, res) => {
     });
 });
 app.post("/webhook", async (req, res) => {
-  const teste: webhook = req.body;
+  const teste: IWebhook = req.body;
   MercadoPago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
   });
@@ -181,9 +246,12 @@ app.post("/process_payment/:orderId", async (req, res) => {
             ?.qr_code_base64 || "",
       }).then((newPayment: any) => {
         console.log("🚀 ~ newPayment:", newPayment);
-        Pedido.update({
-          idPagamento:newPayment.id,
-        }, { where: { id: orderId } })
+        Pedido.update(
+          {
+            idPagamento: newPayment.id,
+          },
+          { where: { id: orderId } }
+        )
           .then((newPayment: any) => {
             res.status(response.status).json(newPayment);
           })
