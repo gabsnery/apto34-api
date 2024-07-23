@@ -54,6 +54,7 @@ app.get("/", (req, res) => {
 });
 app.post("/mercado_pago_webhook/", (req, res) => {
   const event = req.body as IWebhook;
+  console.log("🚀 ~ app.post ~ req.body :", req.body )
   console.log("🚀 ~ app.get ~ event:", event)
 
   var mercadopago = require("mercadopago");
@@ -70,6 +71,7 @@ app.post("/mercado_pago_webhook/", (req, res) => {
       mercadopago.payment
         .get(event.data?.id)
         .then((response: { body: payment; status: any }) => {
+          console.log("🚀 ~ .then ~ response:", response)
           Payment.update(
             {
               parcelado:
