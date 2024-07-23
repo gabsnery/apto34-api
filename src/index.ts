@@ -52,10 +52,10 @@ app.post("/welcome", auth, (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
-app.post("/mercado_pago_webhook/",async (req, res) => {
+app.post("/mercado_pago_webhook",async (req, res) => {
   console.log("🚀 ~ app.post ~ req:", req)
-  const event = req.body as IWebhook;
   console.log("🚀 ~ app.post ~ req.body :", req.body);
+  const event = req.body as IWebhook;
   console.log("🚀 ~ app.get ~ event:", event);
 
   var mercadopago = require("mercadopago");
@@ -73,47 +73,52 @@ app.post("/mercado_pago_webhook/",async (req, res) => {
         .get(event.data?.id)
         .then((response: { body: payment; status: any }) => {
           console.log("🚀 ~ .then ~ response:", response);
-          Payment.update(
-            {
-              parcelado:
-                (response.body.installments ? response.body.installments : 0) >
-                0
-                  ? true
-                  : false,
-              quantidade_parcelas: response.body.installments || 0,
-              pagamento_confirmado: response.body.status === "Aproved",
-              status: response.body.status,
-              status_detail: response.body.status_detail,
-              id_pagamento_tipo: 1,
-
-              data_pagamento_confirmado: response.body.date_approved,
-              mp_id: response.body.id,
-              pix_qrcode:
-                response.body.point_of_interaction?.transaction_data
-                  ?.qr_code_base64 || "",
-            },
-            { where: { mp_id: event.data?.id } }
-          )
-            .then((payment: any) => {
-              console.log("🚀 ~ ).then ~ payment:", payment);
-              Pedido.update(
-                {
-                  pedido_concluido: response.body.status === "Aproved",
-                },
-                { where: { idPagamento: payment.id } }
-              )
-                .then((newPayment: any) => {
-                  res.status(response.status).json(newPayment);
-                })
-                .catch((error: any) => {
-                  console.log("🚀 ~ ).then ~ error:", error);
-                  return res.status(400).json({ status: 400, message: error });
-                });
-            })
-            .catch((error: any) => {
-              console.log("🚀 ~ ).then ~ error:", error);
-              return res.status(400).json({ status: 400, message: error });
-            });
+          Payment.findOne({ where: { mp_id: event.data?.id } }).then((payment:any) => {
+            payment.update(
+              {
+                parcelado:
+                  (response.body.installments ? response.body.installments : 0) >
+                  0
+                    ? true
+                    : false,
+                quantidade_parcelas: response.body.installments || 0,
+                pagamento_confirmado: response.body.status === "Aproved",
+                status: response.body.status,
+                status_detail: response.body.status_detail,
+                id_pagamento_tipo: 1,
+                data_pagamento_confirmado: response.body.date_approved,
+                mp_id: response.body.id,
+                pix_qrcode:
+                  response.body.point_of_interaction?.transaction_data
+                    ?.qr_code_base64 || "",
+              },
+              
+            )
+              .then((updatedPayment: any) => {
+                console.log("🚀 ~ ).then ~ payment:", payment);
+                Pedido.update(
+                  {
+                    pedido_concluido: response.body.status === "Aproved",
+                  },
+                  { where: { idPagamento: updatedPayment.id } }
+                )
+                  .then((newOrder: any) => {
+                    res.status(response.status).json(newOrder);
+                  })
+                  .catch((error: any) => {
+                    console.log("🚀 ~ ).then ~ error:", error);
+                    return res.status(400).json({ status: 400, message: error });
+                  });
+              })
+              .catch((error: any) => {
+                console.log("🚀 ~ ).then ~ error:", error);
+                return res.status(400).json({ status: 400, message: error });
+              });
+          }).catch((error: any) => {
+            console.log("🚀 ~ ).then ~ error:", error);
+            return res.status(400).json({ status: 400, message: error });
+          });
+         
         })
         .catch(function (error: any) {
           console.log("🚀 ~ app.get ~ error:", error);

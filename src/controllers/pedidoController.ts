@@ -7,6 +7,10 @@ import PedidoRequest from "../types/pedido";
 import { Pedido } from "../models/pedido";
 import { Address } from "../models/adress";
 import { Deliver } from "../models/deliver";
+import transformOrder from "../dtos/Order";
+import { Client } from "../models/client";
+import { FiscalNote } from "../models/nota";
+import { Payment } from "../models/payment";
 const database = require("../config/database");
 
 const router = express.Router();
@@ -67,11 +71,28 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
 async function getPedidos(req: Request, res: Response, next: NextFunction) {
   const pedidos = await Pedido.findAll({
     attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
+    include: [
+      {
+        model: Client,
+        as: "cliente",
+      },
+      {
+        model: FiscalNote,
+        as: "notaFiscal",
+      },
+      {
+        model: Payment,
+        as: "pagamento",
+      }
+    ],
   });
-  res.json(pedidos);
+  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos)
+  const etste = await transformOrder(pedidos);
+  console.log("🚀 ~ getPedidos ~ etste:", etste)
+  res.status(201).json(etste);
 }
 
-router.get("/", auth, getPedidos);
+router.get("/",  getPedidos);
 router.post("/", postPedido);
 
 export default router;

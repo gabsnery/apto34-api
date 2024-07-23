@@ -17,5 +17,10 @@ interface Endereco {
   complemento?: string;
   bairro?: string;
 }
+export interface IOrderRespose {
+  id?: number;
+  cliente?: string;
+  pagamento?: string;
+}
 
 export default PedidoRequest;
