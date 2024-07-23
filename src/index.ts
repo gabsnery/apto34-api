@@ -93,6 +93,7 @@ app.post("/mercado_pago_webhook/", (req, res) => {
             },
             { where: { mp_id: event.data?.id } }
           ).then((payment: any) => {
+            console.log("🚀 ~ ).then ~ payment:", payment)
             Pedido.update(
               {
                  pedido_concluido:response.body.status === "Aproved",
