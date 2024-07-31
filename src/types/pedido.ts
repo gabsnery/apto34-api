@@ -1,8 +1,12 @@
+import ClientRequest from "./client";
+import { PaymentGetResponse } from "./payment";
+import ProductResponse from "./product";
+
 interface PedidoRequest {
   id?: number;
-  clienteId:number;
+  clienteId: number;
   produtos: Productos[];
-  endereco:Endereco
+  endereco: Endereco;
 }
 
 interface Productos {
@@ -13,14 +17,20 @@ interface Endereco {
   id?: number;
   cep?: string;
   logradouro?: string;
-  numero:number;
+  numero: number;
   complemento?: string;
   bairro?: string;
 }
-export interface IOrderRespose {
+export interface IOrderGetResponse {
   id?: number;
-  cliente?: string;
-  pagamento?: string;
+  client?: ClientRequest;
+  payment: PaymentGetResponse;
+}
+export interface IOrderGetByIdResponse {
+  id?: number;
+  cliente?: ClientRequest;
+  payment: PaymentGetResponse;
+  products?: ProductResponse[];
 }
 
 export default PedidoRequest;

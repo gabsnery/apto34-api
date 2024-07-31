@@ -18,7 +18,7 @@ const router = express.Router();
 async function postPedido(req: Request, res: Response, next: NextFunction) {
   const body = req.body as PedidoRequest;
 
-  console.log("🚀 ~ body:", body)
+  console.log("🚀 ~ body:", body);
   await Address.create({
     cep: body.endereco.cep,
     logradouro: body.endereco.logradouro,
@@ -60,7 +60,7 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             res.status(201).json(newOrder);
           })
           .catch((e: any) => {
-            console.log("🚀 ~ .then ~ e:", e)
+            console.log("🚀 ~ .then ~ e:", e);
             res.status(400);
           });
       })
@@ -68,7 +68,7 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
   });
 }
 
-async function getPedidos(req: Request, res: Response, next: NextFunction) {
+const  getPedidos = async (req: Request, res: Response, next: NextFunction)=> {
   const pedidos = await Pedido.findAll({
     attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
     include: [
@@ -83,16 +83,42 @@ async function getPedidos(req: Request, res: Response, next: NextFunction) {
       {
         model: Payment,
         as: "pagamento",
-      }
+      },
     ],
   });
-  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos)
+  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
   const etste = await transformOrder(pedidos);
-  console.log("🚀 ~ getPedidos ~ etste:", etste)
+  console.log("🚀 ~ getPedidos ~ etste:", etste);
+  res.status(201).json(etste);
+}
+async function getPedido(req: Request, res: Response, next: NextFunction) {
+  const id = req.params.id;
+
+  const pedidos = await Pedido.findOne({
+    where: { id: id },
+    attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
+    include: [
+      {
+        model: Client,
+        as: "cliente",
+      },
+      {
+        model: FiscalNote,
+        as: "notaFiscal",
+      },
+      {
+        model: Payment,
+        as: "pagamento",
+      },
+    ],
+  });
+  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
+  const etste = await transformOrder(pedidos);
+  console.log("🚀 ~ getPedidos ~ etste:", etste);
   res.status(201).json(etste);
 }
 
-router.get("/",  getPedidos);
+router.get("/", getPedidos);
 router.post("/", postPedido);
 
 export default router;
