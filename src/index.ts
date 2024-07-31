@@ -19,6 +19,8 @@ import { Payment } from "./models/payment";
 import { IWebhook, payment } from "./types/mp_payment";
 import { Pedido } from "./models/pedido";
 import { Product } from "./models/product";
+import { sendEmail } from "./utils/sendEmail";
+import { orderPaymentAccepted, orderPaymentRejected, orderRecived } from "./utils/email";
 
 (async () => {
   const database = require("./config/database");
@@ -52,12 +54,11 @@ app.post("/welcome", auth, (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
+app.get("/send_Email", async (req, res) => {
+  res.status(200).send("Welcome 🙌 ");
+});
 app.post("/mercado_pago_webhook",async (req, res) => {
-  console.log("🚀 ~ app.post ~ req:", req)
-  console.log("🚀 ~ app.post ~ req.body :", req.body);
   const event = req.body as IWebhook;
-  console.log("🚀 ~ app.get ~ event:", event);
-
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -103,6 +104,35 @@ app.post("/mercado_pago_webhook",async (req, res) => {
                   { where: { idPagamento: updatedPayment.id } }
                 )
                   .then((newOrder: any) => {
+                    switch (response.body.status) {
+                      case 'rejected':
+                        sendEmail({to:'gneri94@gmail.com',
+                          subject:`Pedido rejected${response.body.status}`,
+                          html:orderPaymentRejected({
+                            status: response.body.status||'',
+                            status_detail: response.body.status_detail||''
+                          })
+                        })
+                        break;
+                      case 'approved':
+                        sendEmail({to:'gneri94@gmail.com',
+                          subject:`Pedido approved ${response.body.status}`,
+                          html:orderPaymentAccepted({
+                            status: response.body.status||'',
+                            status_detail: response.body.status_detail||''
+                          })
+                        })
+                        break;
+                      default:
+                        sendEmail({to:'gneri94@gmail.com',
+                          subject:`Pedido default${response.body.status}`,
+                          html:orderRecived({
+                            status: response.body.status||'',
+                            status_detail: response.body.status_detail||''
+                          })
+                        })
+                        break;
+                    }
                     res.status(response.status).json(newOrder);
                   })
                   .catch((error: any) => {
