@@ -20,7 +20,7 @@ import { IWebhook, payment } from "./types/mp_payment";
 import { Pedido } from "./models/pedido";
 import { Product } from "./models/product";
 import { sendEmail } from "./utils/sendEmail";
-import { orderPaymentAccepted, orderPaymentRejected, orderRecived } from "./utils/email";
+import { orderPaymentRejected, orderApproved, orderPendingPayment } from "./utils/email";
 
 (async () => {
   const database = require("./config/database");
@@ -109,26 +109,34 @@ app.post("/mercado_pago_webhook",async (req, res) => {
                         sendEmail({to:'gneri94@gmail.com',
                           subject:`Pedido rejected${response.body.status}`,
                           html:orderPaymentRejected({
-                            status: response.body.status||'',
-                            status_detail: response.body.status_detail||''
+                            orderNumber: response.body.id?.toString()||'',
+                            orderDate: response.body.id?.toString()||'',
+                            customerName: "",
+                            supportEmail: "gneri94@gmail.com",
+                            supportPhone: "+55 (19) 98262-8074",
+                            pay:response.body
                           })
                         })
                         break;
                       case 'approved':
                         sendEmail({to:'gneri94@gmail.com',
                           subject:`Pedido approved ${response.body.status}`,
-                          html:orderPaymentAccepted({
-                            status: response.body.status||'',
-                            status_detail: response.body.status_detail||''
+                          html:orderApproved({
+                            orderNumber: response.body.id?.toString()||'',
+                            orderDate: response.body.date_approved?.toString()||'',
+                            customerName: "",
+                            pay:response.body
                           })
                         })
                         break;
                       default:
                         sendEmail({to:'gneri94@gmail.com',
                           subject:`Pedido default${response.body.status}`,
-                          html:orderRecived({
-                            status: response.body.status||'',
-                            status_detail: response.body.status_detail||''
+                          html:orderPendingPayment({
+                            orderNumber: response.body.id?.toString()||'',
+                            orderDate: response.body.date_created?.toString()||'',
+                            paymentLink: "",
+                            pay:response.body
                           })
                         })
                         break;
