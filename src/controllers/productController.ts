@@ -74,10 +74,18 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
 async function getProducts(req: Request, res: Response, next: NextFunction) {
   const start = req.params.start;
   const count = req.params.count;
-
+  let whereClause = {};
+  if (req.query.category)
+    whereClause = {
+      ...whereClause,
+      ["$produtoSubcategoria.produtoCategoria.id$"]: req.query.category,
+    };
+  console.log("🚀 ~ getProducts ~ whereClause:", whereClause);
   const products = await Product.findAll({
+    subQuery: false,
     offset: +start,
     limit: +count,
+    where: whereClause,
     include: [
       {
         model: ProdutoSubcategoria,
@@ -90,11 +98,6 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
         include: {
           model: ProdutoCategoria,
           as: "produtoCategoria",
-          where: req.query.category
-            ? {
-                id: req.query.category,
-              }
-            : undefined,
         },
       },
       {
@@ -205,7 +208,7 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
       }
     })
     .catch((e: any) => {
-      console.log("🚀 ~ postProduct ~ e:", e)
+      console.log("🚀 ~ postProduct ~ e:", e);
     });
 }
 
@@ -221,14 +224,17 @@ const getLocalImage = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const id = req.params.id;
-  const photo = Photo.findOne({
+  const id = decodeURI(req.params.id);
+  console.log("🚀 ~ id:", id);
+  const photo = await Photo.findOne({
     where: { id: decryptId(id) },
   });
+  console.log("🚀 ~ decryptId(id):", decryptId(id));
+  console.log("🚀 ~ photo:", photo);
   try {
     const [url] = await cloudStorage
       .bucket(bucketName)
-      .file("1831689900393785-diminuido.jpg")
+      .file(photo.file_name)
       .getSignedUrl({
         version: "v4",
         action: "read",
@@ -254,7 +260,7 @@ const getLocalImage = async (
   }); */
 };
 
-router.get("/image", getLocalImage);
+router.get("/image/:id", getLocalImage);
 router.get("/:id", getProduct);
 
 router.get("/:start/:count", getProducts);

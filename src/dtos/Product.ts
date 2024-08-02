@@ -25,7 +25,7 @@ async function transformProducts(products: any[]): Promise<ProductResponse[]> {
         const transformedProduct: ProductResponse = {
             id: product.id,
             produtoSubcategoria: transformedSubcategories,
-            photos: product.photo?.filter((ite: any) => ite.thumbnail === false).map((item: any) => encryptId(item.url.toString())),
+            photos: product.photo?.filter((ite: any) => ite.thumbnail === false).map((item: any) => encryptId(item.id.toString())),
             thumbnails: product.photo?.filter((ite: any) => ite.thumbnail === true).map((item: any) => item.url),
             cores: product.color?.map((item: any) => {
                 return ({
