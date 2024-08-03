@@ -11,6 +11,7 @@ import colorRouter from "./controllers/colorController";
 import pedidoRouter from "./controllers/pedidoController";
 import productRouter from "./controllers/productController";
 import sizeRouter from "./controllers/sizeController";
+import clientRouter from "./controllers/clientController";
 import bannerRouter from "./controllers/bannerController";
 import subCategoryRouter from "./controllers/subCategoryController";
 import auth from "./middleware/auth";
@@ -322,6 +323,7 @@ app.use("/api/sizes/", sizeRouter);
 app.use("/api/Subcategorias/", subCategoryRouter);
 app.use("/api/category/", categoryRouter);
 app.use("/api/order/", pedidoRouter);
+app.use("/api/client/", clientRouter);
 app.use("/api/banner/", bannerRouter);
 app.use("/uploads", express.static("uploads"));
 
