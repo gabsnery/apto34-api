@@ -217,13 +217,16 @@ app.post("/mercado_pago", async (req, res) => {
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
   });
 
+  console.log("🚀 ~ app.post ~ req.body:", req.body)
   mercadopago.preferences
     .create(req.body)
     .then(function (preferencia: any) {
+      console.log("🚀 ~ preferencia:", preferencia)
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
-      return res.status(400).json({ status: 400, message: error });
+      console.log("🚀 ~ app.post ~ error:", error)
+      return res.status(400).json({ status: 400, message: JSON.stringify(error) });
     });
 });
 
@@ -303,8 +306,8 @@ app.post("/process_payment/:orderId", async (req, res) => {
           },
           { where: { id: orderId } }
         )
-          .then((newPayment: any) => {
-            res.status(response.status).json(newPayment);
+          .then((_newPayment: any) => {
+            res.status(response.status).json({...newPayment,..._newPayment});
           })
           .catch((error: any) => {
             return res.status(400).json({ status: 400, message: error });
