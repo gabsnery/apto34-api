@@ -18,8 +18,6 @@ const router = express.Router();
 
 async function postPedido(req: Request, res: Response, next: NextFunction) {
   const body = req.body as PedidoRequest;
-
-  console.log("🚀 ~ body:", body);
   await Address.create({
     cep: body.endereco.cep,
     logradouro: body.endereco.logradouro,
@@ -28,7 +26,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
     bairro: body.endereco.bairro,
     id_cidade: 1,
   }).then(async (newAddress: typeof Address) => {
-    console.log("🚀 ~ newAddress:", newAddress);
     Deliver.create({
       id_entrega_status: 1,
       valor_frete: 111,
@@ -50,7 +47,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
           total: body.total,
         })
           .then(async (newOrder: typeof Pedido) => {
-            console.log("🚀 ~ .then ~ newOrder:", newOrder);
             const products_count = body.produtos.length;
             for (let i = 0; i < products_count; i++) {
               await PedidoTemProdutos.create({
@@ -64,7 +60,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             
           })
           .catch((e: any) => {
-            console.log("🚀 ~ .then ~ e:", e);
             res.status(400);
           });
       })
@@ -82,8 +77,6 @@ const getPedidos = async (req: Request, res: Response, next: NextFunction) => {
 
     const decoded = jwt.verify(token, process.env.TOKEN_KEY);
     (req as any).token = decoded;
-
-    console.log("🚀 ~ getPedidos ~ decoded:", decoded);
     const clientId = decoded.user_id;
     const pedidos = await Pedido.findAll({
       where: { idCliente: clientId },
@@ -107,11 +100,9 @@ const getPedidos = async (req: Request, res: Response, next: NextFunction) => {
         },
       ],
     });
-    console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
     const etste = await transformOrder(pedidos);
     res.status(201).json(etste);
   } catch (err) {
-    console.log("🚀 ~ getPedidos ~ err:", err);
     res.status(401).send("Please authenticate");
   }
 };

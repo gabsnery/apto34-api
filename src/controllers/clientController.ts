@@ -19,8 +19,8 @@ async function postClient(req: Request, res: Response, next: NextFunction) {
     .then((newClient: typeof Client) => {
       res.status(201).json(newClient);
     })
-    .catch((e: any) => {
-      console.log("🚀 ~ postProduct ~ e:", e);
+    .catch((error: any) => {
+      res.status(400).json(error);
     });
 }
 

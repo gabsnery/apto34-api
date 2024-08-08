@@ -110,7 +110,6 @@ export const uploadFile = (file: any, name: string): Promise<retorno> => {
       .toFile(resizedImagePath, async (err, info) => {
         const fileUrl = `http://localhost:3005/uploads/thumbnail/${name}-diminuido.jpg`;
         const fileUrl2 = `http://localhost:3005/uploads/${name}.jpg`;
-        console.log("🚀 ~ .toFile ~ file.path:", file.path);
         fs.rename(file.path, `uploads/${name}.jpg`, (error: any) => {
           if (error) {
             // Show the error

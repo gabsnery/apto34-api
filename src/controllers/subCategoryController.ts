@@ -42,8 +42,6 @@ async function transformValue(
   const transformedProducts: ProdutoSubcategoriaResponse[] = [];
 
   for (const sub of subcategories) {
-    console.log("🚀 ~ transformValue ~ sub:", sub);
-
     const transformedSubcategory: Category = {
       id: sub.produtoCategoria.id,
       categoria: sub.produtoCategoria.categoria,

@@ -6,7 +6,6 @@ async function transformOrder(orders: any[]): Promise<PedidoResponse[]> {
   const transformedOrders: PedidoResponse[] = [];
 
   for (const order of orders) {
-    console.log("🚀 ~ transformOrder ~ order:", order.products)
     const transformedOrder: PedidoResponse = {
       id: order.id,
       product: order.products.map((product:any) => ({name:product.name})),

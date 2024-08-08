@@ -74,7 +74,6 @@ app.post("/mercado_pago_webhook",async (req, res) => {
       mercadopago.payment
         .get(event.data?.id)
         .then((response: { body: payment; status: any }) => {
-          console.log("🚀 ~ .then ~ response:", response);
           Payment.findOne({ where: { mp_id: event.data?.id } }).then((payment:any) => {
             payment.update(
               {
@@ -97,7 +96,6 @@ app.post("/mercado_pago_webhook",async (req, res) => {
               
             )
               .then((updatedPayment: any) => {
-                console.log("🚀 ~ ).then ~ payment:", payment);
                 Pedido.update(
                   {
                     pedido_concluido: response.body.status === "Aproved",
@@ -145,22 +143,19 @@ app.post("/mercado_pago_webhook",async (req, res) => {
                     res.status(response.status).json(newOrder);
                   })
                   .catch((error: any) => {
-                    console.log("🚀 ~ ).then ~ error:", error);
                     return res.status(400).json({ status: 400, message: error });
                   });
               })
               .catch((error: any) => {
-                console.log("🚀 ~ ).then ~ error:", error);
                 return res.status(400).json({ status: 400, message: error });
               });
           }).catch((error: any) => {
-            console.log("🚀 ~ ).then ~ error:", error);
             return res.status(400).json({ status: 400, message: error });
           });
          
         })
         .catch(function (error: any) {
-          console.log("🚀 ~ app.get ~ error:", error);
+          return res.status(400).json(error);
         });
       break;
     default:
@@ -175,7 +170,6 @@ app.post("/login", async (req, res) => {
       res.status(400).send("All input is required");
     }
     const user = await Client.findOne({ where: { email: email } });
-    console.log("🚀 ~ app.post ~ user:", user)
     if (user && (await bcrypt.compare(senha, user.senha))) {
       const token = jwt.sign(
         { user_id: user.id, email ,name:user.name},
@@ -218,15 +212,12 @@ app.post("/mercado_pago", async (req, res) => {
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
   });
 
-  console.log("🚀 ~ app.post ~ req.body:", req.body)
   mercadopago.preferences
     .create(req.body)
     .then(function (preferencia: any) {
-      console.log("🚀 ~ preferencia:", preferencia)
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
-      console.log("🚀 ~ app.post ~ error:", error)
       return res.status(400).json({ status: 400, message: JSON.stringify(error) });
     });
 });
@@ -278,8 +269,6 @@ app.post("/process_payment/:orderId", async (req, res) => {
   MercadoPago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
   });
-  console.log("🚀 ~ app.post ~ req.body:", req.body);
-
   mercadopago.payment
     .save(req.body)
     .then(function (response: { body: payment; status: any }) {
@@ -300,7 +289,6 @@ app.post("/process_payment/:orderId", async (req, res) => {
           response.body.point_of_interaction?.transaction_data
             ?.qr_code_base64 || "",
       }).then((newPayment: any) => {
-        console.log("🚀 ~ newPayment:", newPayment);
         Pedido.update(
           {
             idPagamento: newPayment.id,
@@ -316,7 +304,6 @@ app.post("/process_payment/:orderId", async (req, res) => {
       });
     })
     .catch(function (error: any) {
-      console.log("🚀 ~ app.post ~ error:", error);
       return res.status(400).json({ status: 400, message: error });
     });
 });

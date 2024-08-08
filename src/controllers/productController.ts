@@ -80,7 +80,6 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
       ...whereClause,
       ["$produtoSubcategoria.produtoCategoria.id$"]: req.query.category,
     };
-  console.log("🚀 ~ getProducts ~ whereClause:", whereClause);
   const products = await Product.findAll({
     subQuery: false,
     offset: +start,
@@ -137,7 +136,6 @@ const upload = Multer({ dest: "uploads/" }); // Define o diretório onde os arqu
 
 async function postProduct(req: Request, res: Response, next: NextFunction) {
   const body = JSON.parse(req.body.json) as ProductResponse;
-  console.log("🚀 ~ postProduct ~ body:", body);
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
     nome: body.nome,
@@ -207,8 +205,8 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
           .catch((e) => res.status(400));
       }
     })
-    .catch((e: any) => {
-      console.log("🚀 ~ postProduct ~ e:", e);
+    .catch((erro: any) => {
+      res.status(400).json(erro);
     });
 }
 
