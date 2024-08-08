@@ -4,7 +4,7 @@ import express from "express";
 import auth from "../middleware/auth";
 import { Size } from "../models/size";
 import PedidoRequest from "../types/pedido";
-import { Pedido } from "../models/pedido";
+import { Pedido, PedidoTemProdutos } from "../models/pedido";
 import { Address } from "../models/adress";
 import { Deliver } from "../models/deliver";
 import transformOrder from "../dtos/Order";
@@ -12,6 +12,7 @@ import { Client } from "../models/client";
 import { FiscalNote } from "../models/nota";
 import { Payment } from "../models/payment";
 const database = require("../config/database");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
@@ -40,24 +41,27 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
       idTelefone: 1,
     })
       .then((newDeliver: typeof Deliver) => {
-        console.log("🚀 ~ newDeliver:", newDeliver);
-        console.log("🚀 ~ newDeliver:", {
-          idPedidoStatus: 1,
-          data_pedido_realizado: Date.now(),
-          idCliente: body.clienteId,
-          idEntrega: newDeliver.id,
-          pedido_concluido: false,
-        });
         Pedido.create({
           idPedidoStatus: 1,
           data_pedido_realizado: Date.now(),
           idCliente: body.clienteId,
           idEntrega: newDeliver.id,
           pedido_concluido: false,
+          total: body.total,
         })
-          .then((newOrder: typeof Pedido) => {
+          .then(async (newOrder: typeof Pedido) => {
             console.log("🚀 ~ .then ~ newOrder:", newOrder);
+            const products_count = body.produtos.length;
+            for (let i = 0; i < products_count; i++) {
+              await PedidoTemProdutos.create({
+                quantidade: body.produtos[i].quantidade,
+                idProduto: body.produtos[i].id,
+                desconto: 0,
+                idPedido: newOrder.id,
+              })
+            }
             res.status(201).json(newOrder);
+            
           })
           .catch((e: any) => {
             console.log("🚀 ~ .then ~ e:", e);
@@ -68,29 +72,49 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
   });
 }
 
-const  getPedidos = async (req: Request, res: Response, next: NextFunction)=> {
-  const pedidos = await Pedido.findAll({
-    attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
-    include: [
-      {
-        model: Client,
-        as: "cliente",
-      },
-      {
-        model: FiscalNote,
-        as: "notaFiscal",
-      },
-      {
-        model: Payment,
-        as: "pagamento",
-      },
-    ],
-  });
-  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
-  const etste = await transformOrder(pedidos);
-  console.log("🚀 ~ getPedidos ~ etste:", etste);
-  res.status(201).json(etste);
-}
+const getPedidos = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      throw new Error();
+    }
+
+    const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    (req as any).token = decoded;
+
+    console.log("🚀 ~ getPedidos ~ decoded:", decoded);
+    const clientId = decoded.user_id;
+    const pedidos = await Pedido.findAll({
+      where: { idCliente: clientId },
+      attributes: { exclude: ["createdAt", "updatedAt", "deletedAt"] },
+      include: [
+        {
+          model: Client,
+          as: "cliente",
+        },
+        {
+          model: FiscalNote,
+          as: "notaFiscal",
+        },
+        {
+          model: Payment,
+          as: "pagamento",
+        },
+        {
+          model: Product,
+          as: "products",
+        },
+      ],
+    });
+    console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
+    const etste = await transformOrder(pedidos);
+    res.status(201).json(etste);
+  } catch (err) {
+    console.log("🚀 ~ getPedidos ~ err:", err);
+    res.status(401).send("Please authenticate");
+  }
+};
 async function getPedido(req: Request, res: Response, next: NextFunction) {
   const id = req.params.id;
 
@@ -110,15 +134,22 @@ async function getPedido(req: Request, res: Response, next: NextFunction) {
         model: Payment,
         as: "pagamento",
       },
+      {
+        model: Payment,
+        as: "pagamento",
+      },
+      {
+        model: Product,
+        as: "products",
+      },
     ],
   });
-  console.log("🚀 ~ getPedidos ~ pedidos:", pedidos);
-  const etste = await transformOrder(pedidos);
-  console.log("🚀 ~ getPedidos ~ etste:", etste);
-  res.status(201).json(etste);
+  res.status(201).json(pedidos);
 }
 
-router.get("/", getPedidos);
-router.post("/", postPedido);
+router.get("/", auth, getPedidos);
+router.get("/:id", auth, getPedido);
+router.get("/admin", auth, getPedidos);
+router.post("/", auth, postPedido);
 
 export default router;

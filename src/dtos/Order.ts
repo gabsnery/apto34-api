@@ -1,26 +1,19 @@
-import { IOrderGetResponse } from "../types/pedido";
+import { IOrderGetResponse, PedidoResponse } from "../types/pedido";
 import ProductResponse from "../types/product";
 import { encryptId } from "../utils/encrypt";
 
-async function transformOrder(orders: any[]): Promise<IOrderGetResponse[]> {
-  const transformedOrders: IOrderGetResponse[] = [];
+async function transformOrder(orders: any[]): Promise<PedidoResponse[]> {
+  const transformedOrders: PedidoResponse[] = [];
 
   for (const order of orders) {
-    console.log("🚀 ~ transformOrder ~ order:", order);
-    console.log("🚀 ~ transformOrder ~ order:", order.pagamento);
-    const transformedOrder: IOrderGetResponse = {
+    console.log("🚀 ~ transformOrder ~ order:", order.products)
+    const transformedOrder: PedidoResponse = {
       id: order.id,
-      client: {
-        id:order.cliente?.id || "",
-        name:order.cliente?.nome || ""
-    },
-      payment: {
-        type: order.pagamento.status || "",
-        quantidade_parcelas: order.pagamento.status || "",
-        status: order.pagamento.status || "",
-        status_details: order.pagamento.status || "",
-        data_pagamento_confirmado: order.pagamento.status || "",
-      },
+      product: order.products.map((product:any) => ({name:product.name})),
+      number: order.products?.pedido_tem_produto?.quantidade,
+      purchaseDate: order.updatedAt,
+      status: "Aprovado",
+      total: 100
     };
 
     transformedOrders.push(transformedOrder);

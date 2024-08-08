@@ -7,6 +7,20 @@ interface PedidoRequest {
   clienteId: number;
   produtos: Productos[];
   endereco: Endereco;
+  total:number
+}
+interface IProduct{
+  name: string;
+  thumbnail?: string;
+  quantity: number;
+}
+export interface PedidoResponse {
+  id: number;
+  product: IProduct[];
+  number: number;
+  purchaseDate:Date;
+  status:string
+  total:number
 }
 
 interface Productos {

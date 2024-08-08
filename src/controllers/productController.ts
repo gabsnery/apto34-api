@@ -229,8 +229,6 @@ const getLocalImage = async (
   const photo = await Photo.findOne({
     where: { id: decryptId(id) },
   });
-  console.log("🚀 ~ decryptId(id):", decryptId(id));
-  console.log("🚀 ~ photo:", photo);
   try {
     const [url] = await cloudStorage
       .bucket(bucketName)

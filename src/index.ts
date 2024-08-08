@@ -175,9 +175,10 @@ app.post("/login", async (req, res) => {
       res.status(400).send("All input is required");
     }
     const user = await Client.findOne({ where: { email: email } });
+    console.log("🚀 ~ app.post ~ user:", user)
     if (user && (await bcrypt.compare(senha, user.senha))) {
       const token = jwt.sign(
-        { user_id: user._id, email },
+        { user_id: user.id, email ,name:user.name},
         process.env.TOKEN_KEY,
         {
           expiresIn: "2h",
