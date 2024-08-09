@@ -5,6 +5,7 @@ export const Client = database.sequelize.define('cliente', {
     sobrenome: { type: Sequelize.STRING, default: null },
     email: { type: Sequelize.STRING, unique: true },
     senha: { type: Sequelize.STRING },
+    cpf: { type: Sequelize.STRING },
     token: { type: Sequelize.STRING },
     admin: { type: Sequelize.BOOLEAN },
 })

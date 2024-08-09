@@ -1,6 +1,4 @@
-import { IOrderGetResponse, PedidoResponse } from "../types/pedido";
-import ProductResponse from "../types/product";
-import { encryptId } from "../utils/encrypt";
+import { PedidoResponse } from "../types/pedido";
 
 async function transformOrder(orders: any[]): Promise<PedidoResponse[]> {
   const transformedOrders: PedidoResponse[] = [];
