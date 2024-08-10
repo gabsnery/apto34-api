@@ -21,7 +21,19 @@ import { IWebhook, payment } from "./types/mp_payment";
 import { Pedido } from "./models/pedido";
 import { Product } from "./models/product";
 import { sendEmail } from "./utils/sendEmail";
-import { orderPaymentRejected, orderApproved, orderPendingPayment } from "./utils/email";
+import {
+  MercadoPagoConfig,
+  Payment as MPPayment,
+  CardToken,
+  PaymentMethod,
+  Preference,
+} from "mercadopago";
+import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
+import {
+  orderPaymentRejected,
+  orderApproved,
+  orderPendingPayment,
+} from "./utils/email";
 import { changeStatus } from "./utils/changeOrderStatus";
 
 (async () => {
@@ -59,99 +71,114 @@ app.get("/", (req, res) => {
 app.get("/send_Email", async (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
-app.post("/mercado_pago_webhook",async (req, res) => {
+app.post("/mercado_pago_webhook", async (req, res) => {
   const event = req.body as IWebhook;
-  console.log("🚀 ~ app.post mercado_pago_webhook ~ event:", event)
+  console.log("🚀 ~ app.post mercado_pago_webhook ~ event:", event);
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
-    options: { timeout: 5000, idempotencyKey: Math.floor(Math.random() * 200) },
+    options: {
+      timeout: 5000,
+      idempotencyKey: Math.floor(Math.random() * 200),
+    },
   });
 
-  MercadoPago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
-  });
+  console.log("🚀 ~ app.post ~ mercadopago:", mercadopago);
+
   switch (event.type) {
     case "payment":
       mercadopago.payment
         .get(event.data?.id)
         .then((response: { body: payment; status: any }) => {
-          Payment.findOne({ where: { mp_id: event.data?.id } }).then((payment:any) => {
-            payment.update(
-              {
-                parcelado:
-                  (response.body.installments ? response.body.installments : 0) >
-                  0
-                    ? true
-                    : false,
-                quantidade_parcelas: response.body.installments || 0,
-                pagamento_confirmado: response.body.status === "Aproved",
-                status: response.body.status,
-                status_detail: response.body.status_detail,
-                id_pagamento_tipo: 1,
-                data_pagamento_confirmado: response.body.date_approved,
-                mp_id: response.body.id,
-                pix_qrcode:
-                  response.body.point_of_interaction?.transaction_data
-                    ?.qr_code_base64 || "",
-              },
-              
-            )
-              .then(async (updatedPayment: any) => {
-                const pedido = await Pedido.findOne(
-                  { where: { idPagamento: updatedPayment.id } }
-                )
-                changeStatus({idPedido:pedido.id,status:response.body.status?'Pagamento Aprovado':'Pagamento Rejeitado'}).then((newOrder: any) => {
-                    switch (response.body.status) {
-                      case 'rejected':
-                        sendEmail({to:'gneri94@gmail.com',
-                          subject:`Pedido rejected${response.body.status}`,
-                          html:orderPaymentRejected({
-                            orderNumber: response.body.id?.toString()||'',
-                            orderDate: response.body.id?.toString()||'',
-                            customerName: "",
-                            supportEmail: "gneri94@gmail.com",
-                            supportPhone: "+55 (19) 98262-8074",
-                            pay:response.body
-                          })
-                        })
-                        break;
-                      case 'approved':
-                        sendEmail({to:'gneri94@gmail.com',
-                          subject:`Pedido approved ${response.body.status}`,
-                          html:orderApproved({
-                            orderNumber: response.body.id?.toString()||'',
-                            orderDate: response.body.date_approved?.toString()||'',
-                            customerName: "",
-                            pay:response.body
-                          })
-                        })
-                        break;
-                      default:
-                        sendEmail({to:'gneri94@gmail.com',
-                          subject:`Pedido default${response.body.status}`,
-                          html:orderPendingPayment({
-                            orderNumber: response.body.id?.toString()||'',
-                            orderDate: response.body.date_created?.toString()||'',
-                            paymentLink: "",
-                            pay:response.body
-                          })
-                        })
-                        break;
-                    }
-                    res.status(response.status).json(newOrder);
-                  })
-                  .catch((error: any) => {
-                    return res.status(400).json({ status: 400, message: error });
+          Payment.findOne({ where: { mp_id: event.data?.id } })
+            .then((payment: any) => {
+              payment
+                .update({
+                  parcelado:
+                    (response.body.installments
+                      ? response.body.installments
+                      : 0) > 0
+                      ? true
+                      : false,
+                  quantidade_parcelas: response.body.installments || 0,
+                  pagamento_confirmado: response.body.status === "Aproved",
+                  status: response.body.status,
+                  status_detail: response.body.status_detail,
+                  id_pagamento_tipo: 1,
+                  data_pagamento_confirmado: response.body.date_approved,
+                  mp_id: response.body.id,
+                  pix_qrcode:
+                    response.body.point_of_interaction?.transaction_data
+                      ?.qr_code_base64 || "",
+                })
+                .then(async (updatedPayment: any) => {
+                  const pedido = await Pedido.findOne({
+                    where: { idPagamento: updatedPayment.id },
                   });
-              })
-              .catch((error: any) => {
-                return res.status(400).json({ status: 400, message: error });
-              });
-          }).catch((error: any) => {
-            return res.status(400).json({ status: 400, message: error });
-          });
-         
+                  changeStatus({
+                    idPedido: pedido.id,
+                    status: response.body.status
+                      ? "Pagamento Aprovado"
+                      : "Pagamento Rejeitado",
+                  })
+                    .then((newOrder: any) => {
+                      switch (response.body.status) {
+                        case "rejected":
+                          sendEmail({
+                            to: "gneri94@gmail.com",
+                            subject: `Pedido rejected${response.body.status}`,
+                            html: orderPaymentRejected({
+                              orderNumber: response.body.id?.toString() || "",
+                              orderDate: response.body.id?.toString() || "",
+                              customerName: "",
+                              supportEmail: "gneri94@gmail.com",
+                              supportPhone: "+55 (19) 98262-8074",
+                              pay: response.body,
+                            }),
+                          });
+                          break;
+                        case "approved":
+                          sendEmail({
+                            to: "gneri94@gmail.com",
+                            subject: `Pedido approved ${response.body.status}`,
+                            html: orderApproved({
+                              orderNumber: response.body.id?.toString() || "",
+                              orderDate:
+                                response.body.date_approved?.toString() || "",
+                              customerName: "",
+                              pay: response.body,
+                            }),
+                          });
+                          break;
+                        default:
+                          sendEmail({
+                            to: "gneri94@gmail.com",
+                            subject: `Pedido default${response.body.status}`,
+                            html: orderPendingPayment({
+                              orderNumber: response.body.id?.toString() || "",
+                              orderDate:
+                                response.body.date_created?.toString() || "",
+                              paymentLink: "",
+                              pay: response.body,
+                            }),
+                          });
+                          break;
+                      }
+                      res.status(response.status).json(newOrder);
+                    })
+                    .catch((error: any) => {
+                      return res
+                        .status(400)
+                        .json({ status: 400, message: error });
+                    });
+                })
+                .catch((error: any) => {
+                  return res.status(400).json({ status: 400, message: error });
+                });
+            })
+            .catch((error: any) => {
+              return res.status(400).json({ status: 400, message: error });
+            });
         })
         .catch(function (error: any) {
           return res.status(400).json(error);
@@ -171,7 +198,7 @@ app.post("/login", async (req, res) => {
     const user = await Client.findOne({ where: { email: email } });
     if (user && (await bcrypt.compare(senha, user.senha))) {
       const token = jwt.sign(
-        { user_id: user.id, email ,name:user.name},
+        { user_id: user.id, email, name: user.name },
         process.env.TOKEN_KEY,
         {
           expiresIn: "2h",
@@ -216,96 +243,71 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
   mercadopago.preferences
     .create(req.body)
     .then(function (preferencia: any) {
-      changeStatus({status:'Pagamento Pendente',idPedido:orderId})
+      changeStatus({ status: "Pagamento Pendente", idPedido: orderId });
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
-      return res.status(400).json({ status: 400, message: JSON.stringify(error) });
+      return res
+        .status(400)
+        .json({ status: 400, message: JSON.stringify(error) });
     });
 });
 
-app.post("/card_token", async (req, res) => {
-  MercadoPago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
-  });
-
-  const teste = req.body;
-  MercadoPago.card_token
-    .create({
-      card_number: teste.card_number,
-      security_code: teste.security_code,
-      expiration_month: teste.card_expiration_month,
-      expiration_year: teste.cardExpirationYear,
-      cardholder: {
-        name: teste.card_holder_name,
-        identification: {
-          number: teste.identification_number,
-          type: teste.identification_type,
-        },
-      },
-    })
-    .then(function (response: any) {
-      res.status(response.status).json(response.body);
-    })
-    .catch(function (error: any) {
-      return res.status(400).json({ status: 400, message: error });
-    });
-});
-app.post("/webhook", async (req, res) => {
-  const teste: IWebhook = req.body;
-  MercadoPago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
-  });
-  if (teste.type && teste?.data?.id) {
-    MercadoPago.payment.get(teste.data.id || 0).then((x) => {});
-  }
-});
 app.post("/process_payment/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
-  var mercadopago = require("mercadopago");
-  mercadopago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
-    options: { timeout: 5000, idempotencyKey: Math.floor(Math.random() * 200) },
-  });
 
-  MercadoPago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
+  console.log("🚀 ~ app.post ~ req.body:", req.body);
+
+  const mp_client = new MercadoPagoConfig({
+    accessToken: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
+    options: {
+      timeout: 5000,
+      idempotencyKey: Math.floor(Math.random() * 200).toString(),
+    },
   });
-  mercadopago.payment
-    .save(req.body)
-    .then(function (response: { body: payment; status: any }) {
+  const payment = new MPPayment(mp_client);
+  payment
+    .create({ body: req.body })
+    .then((response: PaymentResponse) => {
+      console.log("🚀 ~ app.post ~ response:", response);
       Payment.create({
         parcelado:
-          (response.body.installments ? response.body.installments : 0) > 0
+          (response.installments ? response.installments : 0) > 0
             ? true
             : false,
-        quantidade_parcelas: response.body.installments || 0,
-        pagamento_confirmado: response.body.status === "Aproved",
-        status: response.body.status,
-        status_detail: response.body.status_detail,
+        quantidade_parcelas: response.installments || 0,
+        pagamento_confirmado: response.status === "Aproved",
+        status: response.status,
+        status_detail: response.status_detail,
         id_pagamento_tipo: 1,
 
-        data_pagamento_confirmado: response.body.date_approved,
-        mp_id: response.body.id,
+        data_pagamento_confirmado: response.date_approved,
+        mp_id: response.id,
         pix_qrcode:
-          response.body.point_of_interaction?.transaction_data
-            ?.qr_code_base64 || "",
-      }).then((newPayment: any) => {
-        Pedido.update(
-          {
-            idPagamento: newPayment.id,
-          },
-          { where: { id: orderId } }
-        )
-          .then((_newPayment: any) => {
-            res.status(response.status).json({...newPayment,..._newPayment});
-          })
-          .catch((error: any) => {
-            return res.status(400).json({ status: 400, message: error });
-          });
-      });
+          response.point_of_interaction?.transaction_data?.qr_code_base64 || "",
+      })
+        .then((newPayment: any) => {
+          Pedido.update(
+            {
+              idPagamento: newPayment.id,
+            },
+            { where: { id: orderId } }
+          )
+            .then((_newPayment: any) => {
+              res.status(200).json({ ...newPayment, ..._newPayment });
+            })
+            .catch((error: any) => {
+              console.log("🚀 ~ error 2:", error);
+              return res.status(400).json({ status: 400, message: error });
+            });
+        })
+        .catch((error: any) => {
+          console.log("🚀 ~ error 2:", error);
+          return res.status(400).json({ status: 400, message: error });
+        });
     })
     .catch(function (error: any) {
+      console.log("🚀 ~ app.post ~ error:1", error);
       return res.status(400).json({ status: 400, message: error });
     });
 });
