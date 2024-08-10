@@ -29,6 +29,7 @@ import {
   Preference,
 } from "mercadopago";
 import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
+import { PreferenceRequest } from "mercadopago/dist/clients/preference/commonTypes";
 import {
   orderPaymentRejected,
   orderApproved,
@@ -234,17 +235,22 @@ app.post("/register", async (req, res) => {
 }); */
 app.post("/mercado_pago/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
-
-  var mercadopago = require("mercadopago");
-  mercadopago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
+  const mp_client = new MercadoPagoConfig({
+    accessToken: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
+    options: {
+      timeout: 5000,
+      idempotencyKey: Math.floor(Math.random() * 200).toString(),
+    },
   });
 
-  mercadopago.preferences
+  const preferences = new Preference(mp_client)
+  console.log("🚀 ~ app.post ~ req.body:", req.body)
+  preferences
     .create(req.body)
-    .then(function (preferencia: any) {
+    .then((value: PreferenceRequest) => {
+      console.log("🚀 ~ preferencia:", value)
       changeStatus({ status: "Pagamento Pendente", idPedido: orderId });
-      res.status(201).json(preferencia.body);
+      res.status(201).json(value);
     })
     .catch(function (error: any) {
       return res
