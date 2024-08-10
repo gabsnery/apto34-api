@@ -247,10 +247,10 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
   console.log("🚀 ~ app.post ~ req.body:", req.body)
   preferences
     .create(req.body)
-    .then((value: PreferenceRequest) => {
-      console.log("🚀 ~ preferencia:", value)
+    .then(function (preferencia: any) {
+      console.log("🚀 ~ preferencia:", preferencia)
       changeStatus({ status: "Pagamento Pendente", idPedido: orderId });
-      res.status(201).json(value);
+      res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
       return res
