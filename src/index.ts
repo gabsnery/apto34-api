@@ -74,7 +74,6 @@ app.get("/send_Email", async (req, res) => {
 });
 app.post("/mercado_pago_webhook", async (req, res) => {
   const event = req.body as IWebhook;
-  console.log("🚀 ~ app.post mercado_pago_webhook ~ event:", event);
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -84,7 +83,6 @@ app.post("/mercado_pago_webhook", async (req, res) => {
     },
   });
 
-  console.log("🚀 ~ app.post ~ mercadopago:", mercadopago);
 
   switch (event.type) {
     case "payment":
@@ -242,19 +240,24 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
       idempotencyKey: Math.floor(Math.random() * 200).toString(),
     },
   });
-  console.log("🚀 ~ app.post ~ req.body:", req.body)
-  
-  const preferences = new Preference(mp_client)
-  console.log("🚀 ~ app.post ~ req.body:", req.body)
+  const _body = req.body as {
+    payer: {
+      email: string;
+      first_name: string;
+      last_name: string;
+      identification: { type: string; number: "string" };
+    };
+    card_token: string;
+    transaction_amount: number;
+  };
+  const preferences = new Preference(mp_client);
   preferences
-    .create(req.body)
+    .create({ body: req.body })
     .then(function (preferencia: any) {
-      console.log("🚀 ~ preferencia:", preferencia)
       changeStatus({ status: "Pagamento Pendente", idPedido: orderId });
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
-      console.log("🚀 ~ app.post ~ error:", error)
       return res
         .status(400)
         .json({ status: 400, message: JSON.stringify(error) });
@@ -264,8 +267,6 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
 app.post("/process_payment/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
 
-  console.log("🚀 ~ app.post ~ req.body:", req.body);
-
   const mp_client = new MercadoPagoConfig({
     accessToken: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
     options: {
@@ -274,11 +275,10 @@ app.post("/process_payment/:orderId", async (req, res) => {
     },
   });
   const payment = new MPPayment(mp_client);
-  const {card_token,...body}=req.body
+  const { card_token, ...body } = req.body;
   payment
-    .create({ body: {...body,token:card_token||undefined} })
+    .create({ body: { ...body, token: card_token || undefined } })
     .then((response: PaymentResponse) => {
-      console.log("🚀 ~ app.post ~ response:", response);
       Payment.create({
         parcelado:
           (response.installments ? response.installments : 0) > 0

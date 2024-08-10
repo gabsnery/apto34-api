@@ -135,7 +135,6 @@ interface UploadedFile {
 const upload = Multer({ dest: "uploads/" }); // Define o diretório onde os arquivos serão salvos
 
 async function postProduct(req: Request, res: Response, next: NextFunction) {
-  console.log("🚀 ~ postProduct ~ req.body.json:", req.body.json)
   const body = JSON.parse(req.body.json) as ProductResponse;
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
@@ -214,7 +213,6 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
 async function postProducts(req: Request, res: Response, next: NextFunction) {
   const body = JSON.parse(req.body.json) as ProductResponse &
   { files: UploadedFile[] }[];
-  console.log("🚀 ~ postProducts ~ body:", body)
     
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
@@ -303,7 +301,6 @@ const getLocalImage = async (
   next: NextFunction
 ): Promise<void> => {
   const id = decodeURI(req.params.id);
-  console.log("🚀 ~ id:", id);
   const photo = await Photo.findOne({
     where: { id: decryptId(id) },
   });
