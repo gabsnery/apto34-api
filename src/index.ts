@@ -272,8 +272,9 @@ app.post("/process_payment/:orderId", async (req, res) => {
     },
   });
   const payment = new MPPayment(mp_client);
+  const {card_token,...body}=req.body
   payment
-    .create({ body: {...req.body,token:req.body.card_token||undefined} })
+    .create({ body: {...body,token:card_token||undefined} })
     .then((response: PaymentResponse) => {
       console.log("🚀 ~ app.post ~ response:", response);
       Payment.create({
