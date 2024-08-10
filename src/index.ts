@@ -242,7 +242,8 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
       idempotencyKey: Math.floor(Math.random() * 200).toString(),
     },
   });
-
+  console.log("🚀 ~ app.post ~ req.body:", req.body)
+  
   const preferences = new Preference(mp_client)
   console.log("🚀 ~ app.post ~ req.body:", req.body)
   preferences
@@ -253,6 +254,7 @@ app.post("/mercado_pago/:orderId", async (req, res) => {
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {
+      console.log("🚀 ~ app.post ~ error:", error)
       return res
         .status(400)
         .json({ status: 400, message: JSON.stringify(error) });
