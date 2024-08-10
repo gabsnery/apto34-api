@@ -22,6 +22,7 @@ import { Pedido } from "./models/pedido";
 import { Product } from "./models/product";
 import { sendEmail } from "./utils/sendEmail";
 import { orderPaymentRejected, orderApproved, orderPendingPayment } from "./utils/email";
+import { changeStatus } from "./utils/changeOrderStatus";
 
 (async () => {
   const database = require("./config/database");
@@ -60,6 +61,7 @@ app.get("/send_Email", async (req, res) => {
 });
 app.post("/mercado_pago_webhook",async (req, res) => {
   const event = req.body as IWebhook;
+  console.log("🚀 ~ app.post mercado_pago_webhook ~ event:", event)
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -95,14 +97,11 @@ app.post("/mercado_pago_webhook",async (req, res) => {
               },
               
             )
-              .then((updatedPayment: any) => {
-                Pedido.update(
-                  {
-                    pedido_concluido: response.body.status === "Aproved",
-                  },
+              .then(async (updatedPayment: any) => {
+                const pedido = await Pedido.findOne(
                   { where: { idPagamento: updatedPayment.id } }
                 )
-                  .then((newOrder: any) => {
+                changeStatus({idPedido:pedido.id,status:response.body.status?'Pagamento Aprovado':'Pagamento Rejeitado'}).then((newOrder: any) => {
                     switch (response.body.status) {
                       case 'rejected':
                         sendEmail({to:'gneri94@gmail.com',
@@ -206,7 +205,9 @@ app.post("/register", async (req, res) => {
 
     mercadopago.
 }); */
-app.post("/mercado_pago", async (req, res) => {
+app.post("/mercado_pago/:orderId", async (req, res) => {
+  const orderId = req.params.orderId;
+
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -215,6 +216,7 @@ app.post("/mercado_pago", async (req, res) => {
   mercadopago.preferences
     .create(req.body)
     .then(function (preferencia: any) {
+      changeStatus({status:'Pagamento Pendente',idPedido:orderId})
       res.status(201).json(preferencia.body);
     })
     .catch(function (error: any) {

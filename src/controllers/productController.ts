@@ -135,7 +135,87 @@ interface UploadedFile {
 const upload = Multer({ dest: "uploads/" }); // Define o diretório onde os arquivos serão salvos
 
 async function postProduct(req: Request, res: Response, next: NextFunction) {
+  console.log("🚀 ~ postProduct ~ req.body.json:", req.body.json)
   const body = JSON.parse(req.body.json) as ProductResponse;
+  const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
+  await Product.create({
+    nome: body.nome,
+    descricao: body.descricao,
+    desativado: body.desativado || false,
+    quantity: body.quantity || 0,
+    valor_produto: body.valor_produto || 0,
+  })
+    .then((newPost: typeof Product) => {
+      body.produtoSubcategoria?.map((sub) =>
+        newPost.setProdutoSubcategoria(sub.id)
+      );
+      body.tamanhos?.map((sub) =>
+        Produto_tem_size.create({
+          produtoId: newPost.id,
+          tamanhoId: sub.id,
+          quantity: sub.quantidade,
+        })
+      );
+      body.cores?.map((sub) =>
+        Produto_tem_cor.create({
+          produtoId: newPost.id,
+          corId: sub.id,
+          quantidade: sub.quantidade,
+        })
+      );
+
+      if (files) {
+        const uploadPromises = files?.map(
+          async (file) =>
+            await uploadFileGoogleStorage(file, `${newPost.id}${Date.now()}`)
+        );
+        Promise.all(uploadPromises)
+          .then((fileUrls) => {
+            fileUrls?.map((item: any, index: number) => {
+              Photo.create({
+                url: item.url,
+                thumbnail: false,
+                file_name: item.fileName,
+                host: item.host,
+              })
+                .then(async (newPhoto: any) => {
+                  produto_tem_photo.create({
+                    produtoId: newPost.id,
+                    photoId: newPhoto.id,
+                    is_cover: index === 0,
+                  });
+                })
+                .catch((e: any) => res.status(400));
+              Photo.create({
+                url: item.thumbnail,
+                thumbnail: true,
+                file_name: item.thumbFileName,
+                host: item.host,
+              })
+                .then(async (newPhoto: any) => {
+                  produto_tem_photo.create({
+                    produtoId: newPost.id,
+                    photoId: newPhoto.id,
+                    is_cover: index === 0,
+                  });
+                })
+                .catch((e: any) => res.status(400));
+            });
+            res.status(201).json(newPost);
+          })
+          .catch((e) => res.status(400));
+      }
+    })
+    .catch((erro: any) => {
+      res.status(400).json(erro);
+    });
+}
+
+async function postProducts(req: Request, res: Response, next: NextFunction) {
+  const body = JSON.parse(req.body.json) as ProductResponse &
+  { files: UploadedFile[] }[];
+  console.log("🚀 ~ postProducts ~ body:", body)
+    
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
     nome: body.nome,
@@ -264,5 +344,6 @@ router.get("/:start/:count", getProducts);
 router.put("/:id", patchProduct);
 
 router.post("/", upload.array("files"), postProduct);
+router.post("/batch", upload.array("files"), postProducts);
 
 export default router;
