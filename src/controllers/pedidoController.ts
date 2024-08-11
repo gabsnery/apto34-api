@@ -26,53 +26,58 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
     complemento: body.endereco.complemento,
     bairro: body.endereco.bairro,
     id_cidade: 1,
-  }).then(async (newAddress: typeof Address) => {
-    Deliver.create({
-      id_entrega_status: 1,
-      valor_frete: 111,
-      codigo_rastreio: "",
-      idEndereco: newAddress.id,
-      data_entrega_inicio: Date.now(),
-      data_entrega_previsao: Date.now(),
-      entrega_concluida: false,
-      idTransportadora: 1,
-      idTelefone: 1,
-    })
-      .then((newDeliver: typeof Deliver) => {
-        Pedido.create({
-          data_pedido_realizado: Date.now(),
-          idCliente: body.clienteId,
-          idEntrega: newDeliver.id,
-          pedido_concluido: false,
-          total: body.total,
-        })
-          .then(async (newOrder: typeof Pedido) => {
-            console.log("🚀 ~ .then ~ newOrder:", newOrder);
-            await changeStatus({
-              idPedido: newOrder.id,
-              status: "Pedido Recebido",
-            });
-            const products_count = body.produtos.length;
-            for (let i = 0; i < products_count; i++) {
-              await PedidoTemProdutos.create({
-                quantidade: body.produtos[i].quantidade,
-                idProduto: body.produtos[i].id,
-                desconto: 0,
-                idPedido: newOrder.id,
-              });
-            }
-            res.status(201).json(newOrder);
-          })
-          .catch((e: any) => {
-            console.log("🚀 postPedido error c1:", e);
-            res.status(400).json(e);
-          });
+  })
+    .then(async (newAddress: typeof Address) => {
+      Deliver.create({
+        id_entrega_status: 1,
+        valor_frete: 111,
+        codigo_rastreio: "",
+        idEndereco: newAddress.id,
+        data_entrega_inicio: Date.now(),
+        data_entrega_previsao: Date.now(),
+        entrega_concluida: false,
+        idTransportadora: 1,
+        idTelefone: 1,
       })
-      .catch((e: any) => {
-        console.log("🚀 postPedido error c2:", e);
-        res.status(400).json(e);
-      });
-  });
+        .then((newDeliver: typeof Deliver) => {
+          Pedido.create({
+            data_pedido_realizado: Date.now(),
+            idCliente: body.clienteId,
+            idEntrega: newDeliver.id,
+            pedido_concluido: false,
+            total: body.total,
+          })
+            .then(async (newOrder: typeof Pedido) => {
+              console.log("🚀 ~ .then ~ newOrder:", newOrder);
+              await changeStatus({
+                idPedido: newOrder.id,
+                status: "Pedido Recebido",
+              });
+              const products_count = body.produtos.length;
+              for (let i = 0; i < products_count; i++) {
+                await PedidoTemProdutos.create({
+                  quantidade: body.produtos[i].quantidade,
+                  idProduto: body.produtos[i].id,
+                  desconto: 0,
+                  idPedido: newOrder.id,
+                });
+              }
+              res.status(201).json(newOrder);
+            })
+            .catch((e: any) => {
+              console.log("🚀 postPedido error c1:", e);
+              res.status(400).json(e);
+            });
+        })
+        .catch((e: any) => {
+          console.log("🚀 postPedido error c2:", e);
+          res.status(400).json(e);
+        });
+    })
+    .catch((e: any) => {
+      console.log("🚀 postPedido error c2:", e);
+      res.status(400).json(e);
+    });
 }
 
 const getPedidos = async (req: Request, res: Response, next: NextFunction) => {
