@@ -93,8 +93,8 @@ app.post("/mercado_pago_webhook", async (req, res) => {
           .then((response: PaymentResponse) => {
             console.log("🚀 ~ .then ~ response:", response)
             Payment.findOne({ where: { mp_id: event.data?.id } })
-              .then((payment: any) => {
-                payment
+              .then((_payment: any) => {
+                _payment
                   .update({
                     parcelado:
                       (response.installments
@@ -119,9 +119,9 @@ app.post("/mercado_pago_webhook", async (req, res) => {
                     });
                     changeStatus({
                       idPedido: pedido.id,
-                      status: response.status
-                        ? "Pagamento Aprovado"
-                        : "Pagamento Rejeitado",
+                      status: response.status==='rejected'?"Pagamento Rejeitado"
+                        :response.status==='approved'? "Pagamento Aprovado"
+                        :"Pagamento Rejeitado" ,
                     })
                       .then((newOrder: any) => {
                         switch (response.status) {
