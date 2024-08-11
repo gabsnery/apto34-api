@@ -4,7 +4,6 @@ import express from "express";
 import "express-async-errors";
 import fs from "fs";
 import helmet from "helmet";
-import * as MercadoPago from "mercadopago";
 import morgan from "morgan";
 import categoryRouter from "./controllers/categoryController";
 import colorRouter from "./controllers/colorController";
@@ -85,21 +84,21 @@ app.post("/mercado_pago_webhook", async (req, res) => {
   });
   const payment = new MPPayment(mp_client);
 
-  if (event.data?.id)
+  console.log("🚀 ~ app.post ~ event.data?.id:", event.data?.id);
+  if (event.data?.id) {
+
     switch (event.type) {
       case "payment":
         payment
           .get({ id: event.data?.id?.toString() })
           .then((response: PaymentResponse) => {
-            console.log("🚀 ~ .then ~ response:", response)
+            console.log("🚀 ~ .then ~ response:", response);
             Payment.findOne({ where: { mp_id: event.data?.id } })
               .then((_payment: any) => {
                 _payment
                   .update({
                     parcelado:
-                      (response.installments
-                        ? response.installments
-                        : 0) > 0
+                      (response.installments ? response.installments : 0) > 0
                         ? true
                         : false,
                     quantidade_parcelas: response.installments || 0,
@@ -119,9 +118,12 @@ app.post("/mercado_pago_webhook", async (req, res) => {
                     });
                     changeStatus({
                       idPedido: pedido.id,
-                      status: response.status==='rejected'?"Pagamento Rejeitado"
-                        :response.status==='approved'? "Pagamento Aprovado"
-                        :"Pagamento Rejeitado" ,
+                      status:
+                        response.status === "rejected"
+                          ? "Pagamento Rejeitado"
+                          : response.status === "approved"
+                          ? "Pagamento Aprovado"
+                          : "Pagamento Rejeitado",
                     })
                       .then((newOrder: any) => {
                         switch (response.status) {
@@ -169,28 +171,33 @@ app.post("/mercado_pago_webhook", async (req, res) => {
                         res.status(200).json(newOrder);
                       })
                       .catch((error: any) => {
+                        console.log("🚀 ~ .then ~ error:", error);
                         return res
                           .status(400)
                           .json({ status: 400, message: error });
                       });
                   })
                   .catch((error: any) => {
+                    console.log("🚀 ~ .then ~ error:", error);
                     return res
                       .status(400)
                       .json({ status: 400, message: error });
                   });
               })
               .catch((error: any) => {
+                console.log("🚀 ~ .then ~ error:", error);
                 return res.status(400).json({ status: 400, message: error });
               });
           })
           .catch(function (error: any) {
+            console.log("🚀 ~ app.post ~ error:", error);
             return res.status(400).json(error);
           });
         break;
       default:
         return res.status(400).json({});
     }
+  }
 });
 
 app.post("/login", async (req, res) => {
