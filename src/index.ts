@@ -123,7 +123,7 @@ app.post("/mercado_pago_webhook", async (req, res) => {
                           ? "Pagamento Rejeitado"
                           : response.status === "approved"
                           ? "Pagamento Aprovado"
-                          : "Pagamento Rejeitado",
+                          : "Pagamento Pendente",
                     })
                       .then((newOrder: any) => {
                         switch (response.status) {
@@ -307,7 +307,7 @@ app.post("/process_payment/:orderId", async (req, res) => {
             { where: { id: orderId } }
           )
             .then((_newPayment: any) => {
-              res.status(200).json({ ...newPayment, ..._newPayment });
+              res.status(200).json(response);
             })
             .catch((error: any) => {
               console.log("🚀 ~ error 2:", error);
