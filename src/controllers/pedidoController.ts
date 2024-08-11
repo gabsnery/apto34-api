@@ -4,7 +4,7 @@ import express from "express";
 import auth from "../middleware/auth";
 import { Size } from "../models/size";
 import PedidoRequest from "../types/pedido";
-import { Pedido, PedidoTemProdutos } from "../models/pedido";
+import { Pedido, PedidoStatus, PedidoTemProdutos } from "../models/pedido";
 import { Address } from "../models/adress";
 import { Deliver } from "../models/deliver";
 import transformOrder from "../dtos/Order";
@@ -39,8 +39,12 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
         idTransportadora: 1,
         idTelefone: 1,
       })
-        .then((newDeliver: typeof Deliver) => {
+        .then(async (newDeliver: typeof Deliver) => {
+          let pedidoStatus = await PedidoStatus.findOne({
+            where: { status_pedido: "Em analise" },
+          });
           Pedido.create({
+            idPedidoStatus:pedidoStatus.id,
             data_pedido_realizado: Date.now(),
             idCliente: body.clienteId,
             idEntrega: newDeliver.id,
