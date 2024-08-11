@@ -91,6 +91,7 @@ app.post("/mercado_pago_webhook", async (req, res) => {
         payment
           .get({ id: event.data?.id?.toString() })
           .then((response: PaymentResponse) => {
+            console.log("🚀 ~ .then ~ response:", response)
             Payment.findOne({ where: { mp_id: event.data?.id } })
               .then((payment: any) => {
                 payment
