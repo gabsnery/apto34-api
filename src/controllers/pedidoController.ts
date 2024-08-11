@@ -52,11 +52,6 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             total: body.total,
           })
             .then(async (newOrder: typeof Pedido) => {
-              console.log("🚀 ~ .then ~ newOrder:", newOrder);
-              await changeStatus({
-                idPedido: newOrder.id,
-                status: "Pedido Recebido",
-              });
               const products_count = body.produtos.length;
               for (let i = 0; i < products_count; i++) {
                 await PedidoTemProdutos.create({
