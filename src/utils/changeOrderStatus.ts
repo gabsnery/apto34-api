@@ -20,22 +20,23 @@ interface IProps {
 }
 export const changeStatus = async (props: IProps) => {
   const { idPedido, status } = props;
-  const pedidoStatus = await PedidoStatus.findOne({
+  let pedidoStatus = await PedidoStatus.findOne({
     where: { status_pedido: status },
   });
   console.log("🚀 ~ changeStatus ~ pedidoStatus:", pedidoStatus);
+  if(pedidoStatus===null)
+    pedidoStatus = await PedidoStatus.create({
+      status_pedido:status,
+      desativado:false,
+      data_criacao:new Date()
+    })
 
-  PedidoStatus.findOne({
-    where: { status_pedido: status },
-  }).then((result: typeof PedidoStatus) => {
-    console.log("🚀 ~ changeStatus ~ result:", result);
     Pedido.update(
       {
-        idPedidoStatus: result.id,
+        idPedidoStatus: pedidoStatus.id,
       },
       {
         where: { id: idPedido },
       }
-    );
-  });
+  )
 };
