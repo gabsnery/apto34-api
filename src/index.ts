@@ -74,6 +74,7 @@ app.get("/send_Email", async (req, res) => {
 });
 app.post("/mercado_pago_webhook", async (req, res) => {
   const event = req.body as IWebhook;
+  console.log("🚀mercado_pago_webhook", req.body )
   var mercadopago = require("mercadopago");
   mercadopago.configure({
     access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
@@ -223,14 +224,6 @@ app.post("/register", async (req, res) => {
   res.status(201).json(teste);
 });
 
-/* app.post("/mercado_pago_issuers", async (req, res) => {
-    var mercadopago = require('mercadopago');
-    mercadopago.configure({
-        access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN
-    });
-
-    mercadopago.
-}); */
 app.post("/mercado_pago/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
   const mp_client = new MercadoPagoConfig({
