@@ -23,20 +23,13 @@ export const changeStatus = async (props: IProps) => {
   let pedidoStatus = await PedidoStatus.findOne({
     where: { status_pedido: status },
   });
-  console.log("🚀 ~ changeStatus ~ pedidoStatus:", pedidoStatus);
-  if(pedidoStatus===null)
-    pedidoStatus = await PedidoStatus.create({
-      status_pedido:status,
-      desativado:false,
-      data_criacao:new Date()
-    })
 
-    Pedido.update(
-      {
-        idPedidoStatus: pedidoStatus.id,
-      },
-      {
-        where: { id: idPedido },
-      }
-  )
+  Pedido.update(
+    {
+      idPedidoStatus: pedidoStatus.id,
+    },
+    {
+      where: { id: idPedido },
+    }
+  );
 };
