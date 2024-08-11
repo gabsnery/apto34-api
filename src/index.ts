@@ -74,119 +74,122 @@ app.get("/send_Email", async (req, res) => {
 });
 app.post("/mercado_pago_webhook", async (req, res) => {
   const event = req.body as IWebhook;
-  console.log("🚀mercado_pago_webhook", req.body )
-  var mercadopago = require("mercadopago");
-  mercadopago.configure({
-    access_token: process.env.REACT_APP_MERCADOLIVRE_TOKEN,
+  console.log("🚀mercado_pago_webhook~ req.body:", req.body);
+  console.log("🚀mercado_pago_webhook", req.body);
+  const mp_client = new MercadoPagoConfig({
+    accessToken: process.env.REACT_APP_MERCADOLIVRE_TOKEN || "",
     options: {
       timeout: 5000,
-      idempotencyKey: Math.floor(Math.random() * 200),
+      idempotencyKey: Math.floor(Math.random() * 200).toString(),
     },
   });
+  const payment = new MPPayment(mp_client);
 
-
-  switch (event.type) {
-    case "payment":
-      mercadopago.payment
-        .get(event.data?.id)
-        .then((response: { body: payment; status: any }) => {
-          Payment.findOne({ where: { mp_id: event.data?.id } })
-            .then((payment: any) => {
-              payment
-                .update({
-                  parcelado:
-                    (response.body.installments
-                      ? response.body.installments
-                      : 0) > 0
-                      ? true
-                      : false,
-                  quantidade_parcelas: response.body.installments || 0,
-                  pagamento_confirmado: response.body.status === "Aproved",
-                  status: response.body.status,
-                  status_detail: response.body.status_detail,
-                  id_pagamento_tipo: 1,
-                  data_pagamento_confirmado: response.body.date_approved,
-                  mp_id: response.body.id,
-                  pix_qrcode:
-                    response.body.point_of_interaction?.transaction_data
-                      ?.qr_code_base64 || "",
-                })
-                .then(async (updatedPayment: any) => {
-                  const pedido = await Pedido.findOne({
-                    where: { idPagamento: updatedPayment.id },
-                  });
-                  changeStatus({
-                    idPedido: pedido.id,
-                    status: response.body.status
-                      ? "Pagamento Aprovado"
-                      : "Pagamento Rejeitado",
+  if (event.data?.id)
+    switch (event.type) {
+      case "payment":
+        payment
+          .get({ id: event.data?.id?.toString() })
+          .then((response: PaymentResponse) => {
+            Payment.findOne({ where: { mp_id: event.data?.id } })
+              .then((payment: any) => {
+                payment
+                  .update({
+                    parcelado:
+                      (response.installments
+                        ? response.installments
+                        : 0) > 0
+                        ? true
+                        : false,
+                    quantidade_parcelas: response.installments || 0,
+                    pagamento_confirmado: response.status === "Aproved",
+                    status: response.status,
+                    status_detail: response.status_detail,
+                    id_pagamento_tipo: 1,
+                    data_pagamento_confirmado: response.date_approved,
+                    mp_id: response.id,
+                    pix_qrcode:
+                      response.point_of_interaction?.transaction_data
+                        ?.qr_code_base64 || "",
                   })
-                    .then((newOrder: any) => {
-                      switch (response.body.status) {
-                        case "rejected":
-                          sendEmail({
-                            to: "gneri94@gmail.com",
-                            subject: `Pedido rejected${response.body.status}`,
-                            html: orderPaymentRejected({
-                              orderNumber: response.body.id?.toString() || "",
-                              orderDate: response.body.id?.toString() || "",
-                              customerName: "",
-                              supportEmail: "gneri94@gmail.com",
-                              supportPhone: "+55 (19) 98262-8074",
-                              pay: response.body,
-                            }),
-                          });
-                          break;
-                        case "approved":
-                          sendEmail({
-                            to: "gneri94@gmail.com",
-                            subject: `Pedido approved ${response.body.status}`,
-                            html: orderApproved({
-                              orderNumber: response.body.id?.toString() || "",
-                              orderDate:
-                                response.body.date_approved?.toString() || "",
-                              customerName: "",
-                              pay: response.body,
-                            }),
-                          });
-                          break;
-                        default:
-                          sendEmail({
-                            to: "gneri94@gmail.com",
-                            subject: `Pedido default${response.body.status}`,
-                            html: orderPendingPayment({
-                              orderNumber: response.body.id?.toString() || "",
-                              orderDate:
-                                response.body.date_created?.toString() || "",
-                              paymentLink: "",
-                              pay: response.body,
-                            }),
-                          });
-                          break;
-                      }
-                      res.status(response.status).json(newOrder);
-                    })
-                    .catch((error: any) => {
-                      return res
-                        .status(400)
-                        .json({ status: 400, message: error });
+                  .then(async (updatedPayment: any) => {
+                    const pedido = await Pedido.findOne({
+                      where: { idPagamento: updatedPayment.id },
                     });
-                })
-                .catch((error: any) => {
-                  return res.status(400).json({ status: 400, message: error });
-                });
-            })
-            .catch((error: any) => {
-              return res.status(400).json({ status: 400, message: error });
-            });
-        })
-        .catch(function (error: any) {
-          return res.status(400).json(error);
-        });
-      break;
-    default:
-      return res.status(400).json({});
-  }
+                    changeStatus({
+                      idPedido: pedido.id,
+                      status: response.status
+                        ? "Pagamento Aprovado"
+                        : "Pagamento Rejeitado",
+                    })
+                      .then((newOrder: any) => {
+                        switch (response.status) {
+                          case "rejected":
+                            sendEmail({
+                              to: "gneri94@gmail.com",
+                              subject: `Pedido rejected${response.status}`,
+                              html: orderPaymentRejected({
+                                orderNumber: response.id?.toString() || "",
+                                orderDate: response.id?.toString() || "",
+                                customerName: "",
+                                supportEmail: "gneri94@gmail.com",
+                                supportPhone: "+55 (19) 98262-8074",
+                                pay: response,
+                              }),
+                            });
+                            break;
+                          case "approved":
+                            sendEmail({
+                              to: "gneri94@gmail.com",
+                              subject: `Pedido approved ${response.status}`,
+                              html: orderApproved({
+                                orderNumber: response.id?.toString() || "",
+                                orderDate:
+                                  response.date_approved?.toString() || "",
+                                customerName: "",
+                                pay: response,
+                              }),
+                            });
+                            break;
+                          default:
+                            sendEmail({
+                              to: "gneri94@gmail.com",
+                              subject: `Pedido default${response.status}`,
+                              html: orderPendingPayment({
+                                orderNumber: response.id?.toString() || "",
+                                orderDate:
+                                  response.date_created?.toString() || "",
+                                paymentLink: "",
+                                pay: response,
+                              }),
+                            });
+                            break;
+                        }
+                        res.status(200).json(newOrder);
+                      })
+                      .catch((error: any) => {
+                        return res
+                          .status(400)
+                          .json({ status: 400, message: error });
+                      });
+                  })
+                  .catch((error: any) => {
+                    return res
+                      .status(400)
+                      .json({ status: 400, message: error });
+                  });
+              })
+              .catch((error: any) => {
+                return res.status(400).json({ status: 400, message: error });
+              });
+          })
+          .catch(function (error: any) {
+            return res.status(400).json(error);
+          });
+        break;
+      default:
+        return res.status(400).json({});
+    }
 });
 
 app.post("/login", async (req, res) => {
