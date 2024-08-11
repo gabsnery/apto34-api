@@ -47,7 +47,11 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
           total: body.total,
         })
           .then(async (newOrder: typeof Pedido) => {
-            await changeStatus({idPedido:newOrder.id,status:"Pedido Recebido"})
+            console.log("🚀 ~ .then ~ newOrder:", newOrder);
+            await changeStatus({
+              idPedido: newOrder.id,
+              status: "Pedido Recebido",
+            });
             const products_count = body.produtos.length;
             for (let i = 0; i < products_count; i++) {
               await PedidoTemProdutos.create({
@@ -55,16 +59,19 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
                 idProduto: body.produtos[i].id,
                 desconto: 0,
                 idPedido: newOrder.id,
-              })
+              });
             }
             res.status(201).json(newOrder);
-            
           })
           .catch((e: any) => {
-            res.status(400);
+            console.log("🚀 postPedido error c1:", e);
+            res.status(400).json(e);
           });
       })
-      .catch((e: any) => res.status(400));
+      .catch((e: any) => {
+        console.log("🚀 postPedido error c2:", e);
+        res.status(400).json(e);
+      });
   });
 }
 
