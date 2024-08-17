@@ -1,3 +1,4 @@
+require('newrelic');
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import express from "express";
@@ -35,7 +36,6 @@ import {
   orderPendingPayment,
 } from "./utils/email";
 import { changeStatus } from "./utils/changeOrderStatus";
-
 (async () => {
   const database = require("./config/database");
   database.sequelize
