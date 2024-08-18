@@ -3,39 +3,35 @@ import bcrypt from "bcryptjs";
 import cors from "cors";
 import express from "express";
 import "express-async-errors";
-import fs from "fs";
 import helmet from "helmet";
+import {
+  MercadoPagoConfig,
+  Payment as MPPayment,
+  Preference
+} from "mercadopago";
+import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import morgan from "morgan";
+import bannerRouter from "./controllers/bannerController";
 import categoryRouter from "./controllers/categoryController";
+import clientRouter from "./controllers/clientController";
 import colorRouter from "./controllers/colorController";
 import pedidoRouter from "./controllers/pedidoController";
 import productRouter from "./controllers/productController";
 import sizeRouter from "./controllers/sizeController";
-import clientRouter from "./controllers/clientController";
-import bannerRouter from "./controllers/bannerController";
 import subCategoryRouter from "./controllers/subCategoryController";
 import auth from "./middleware/auth";
 import { Client } from "./models/client";
 import { Payment } from "./models/payment";
-import { IWebhook, payment } from "./types/mp_payment";
 import { Pedido } from "./models/pedido";
-import { Product } from "./models/product";
-import { sendEmail } from "./utils/sendEmail";
+import { IWebhook } from "./types/mp_payment";
+import { changeStatus } from "./utils/changeOrderStatus";
 import {
-  MercadoPagoConfig,
-  Payment as MPPayment,
-  CardToken,
-  PaymentMethod,
-  Preference,
-} from "mercadopago";
-import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
-import { PreferenceRequest } from "mercadopago/dist/clients/preference/commonTypes";
-import {
-  orderPaymentRejected,
   orderApproved,
+  orderPaymentRejected,
   orderPendingPayment,
 } from "./utils/email";
-import { changeStatus } from "./utils/changeOrderStatus";
+import { sendEmail } from "./utils/sendEmail";
+import { generateSigned } from "./utils/generateSigned";
 (async () => {
   const database = require("./config/database");
   database.sequelize
@@ -334,6 +330,8 @@ app.use("/api/order/", pedidoRouter);
 app.use("/api/client/", clientRouter);
 app.use("/api/banner/", bannerRouter);
 app.use("/uploads", express.static("uploads"));
+
+app.get("/api/generate_signed/:fileName",generateSigned)
 
 // Inicia o servidor
 app.listen(PORT, () => {
