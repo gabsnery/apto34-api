@@ -43,14 +43,19 @@ import { generateSigned } from "./utils/generateSigned";
 })();
 const http = require("http");
 const PORT = process.env.PORT || 3000;
+const CORS_URL = process.env.FRONT_APP_URL || 'http://localhost:5173/';
 const app = express();
 
 const jwt = require("jsonwebtoken");
 
 app.use(morgan("tiny"));
 
-app.use(cors());
 
+var corsOptions = {
+    origin: CORS_URL,
+    optionsSuccessStatus: 200, // For legacy browser support
+    methods: "GET, PUT" // add per need
+}
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
