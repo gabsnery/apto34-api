@@ -43,20 +43,29 @@ import { generateSigned } from "./utils/generateSigned";
 })();
 const http = require("http");
 const PORT = process.env.PORT || 3000;
-const CORS_URL = process.env.FRONT_APP_URL || 'http://localhost:5173/';
+const CORS_URL = process.env.FRONT_APP_URL || 'http://localhost:5173';
 const app = express();
 
 const jwt = require("jsonwebtoken");
 
 app.use(morgan("tiny"));
 
-
+var whitelist = [CORS_URL]
+var corsOptionsDelegate = function (req:any, callback:any) {
+  var corsOptions;
+  if (whitelist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  }else{
+    corsOptions = { origin: false } // disable CORS for this request
+  }
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
 var corsOptions = {
     origin: CORS_URL,
     optionsSuccessStatus: 200, // For legacy browser support
-    methods: "GET, PUT" // add per need
+    methods: "GET, PUT, POST" // add per need
 }
-app.use(cors(corsOptions));
+app.use(cors(corsOptionsDelegate));
 
 app.use(
   helmet({
