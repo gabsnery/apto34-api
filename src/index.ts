@@ -183,26 +183,22 @@ app.post("/mercado_pago_webhook", async (req, res) => {
                         res.status(200).json(newOrder);
                       })
                       .catch((error: any) => {
-                        console.log("🚀 ~ .then ~ error:", error);
                         return res
                           .status(400)
                           .json({ status: 400, message: error });
                       });
                   })
                   .catch((error: any) => {
-                    console.log("🚀 ~ .then ~ error:", error);
                     return res
                       .status(400)
                       .json({ status: 400, message: error });
                   });
               })
               .catch((error: any) => {
-                console.log("🚀 ~ .then ~ error:", error);
                 return res.status(400).json({ status: 400, message: error });
               });
           })
           .catch(function (error: any) {
-            console.log("🚀 ~ app.post ~ error:", error);
             return res.status(400).json(error);
           });
         break;

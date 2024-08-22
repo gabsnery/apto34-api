@@ -10,8 +10,6 @@ const cloudStorage = new Storage({
 
 export const generateSigned = async (req: Request, res: Response)  => {
   const fileName = req.params.fileName;
-  console.log("🚀 ~ generateSigned ~ fileName:", fileName)
-
   try {
     const teste= await cloudStorage
       .bucket(bucketName)
@@ -29,7 +27,6 @@ export const generateSigned = async (req: Request, res: Response)  => {
         action: "read",
         expires: Date.now() + 15 * 60 * 1000, // URL válida por 15 minutos
       });
-      console.log("🚀 ~ generateSigned ~ teste:", teste)
     res.json({ url: url });
   } catch (error: any) {
     throw new Error(`Erro ao gerar a URL assinada: ${error.message}`);
