@@ -15,6 +15,11 @@ import ProductResponse from "../types/product";
 import { uploadFileGoogleStorage } from "../utils/upload";
 import { decryptId, encryptId } from "../utils/encrypt";
 import transformProducts from "../dtos/Product";
+import Sequelize from 'sequelize';
+
+const { Op } = require('sequelize')
+
+
 const database = require("../config/database");
 const Multer = require("multer");
 
@@ -74,11 +79,20 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
 async function getProducts(req: Request, res: Response, next: NextFunction) {
   const start = req.params.start;
   const count = req.params.count;
+  const discount = req.query.discount;
+  console.log("🚀 ~ getProducts ~ discount:", discount)
   let whereClause = {};
   if (req.query.category)
     whereClause = {
       ...whereClause,
       ["$produtoSubcategoria.produtoCategoria.id$"]: req.query.category,
+    };
+  if (discount)
+    whereClause = {
+      ...whereClause,
+      discount: {
+        [Sequelize.Op.gte]: +discount,
+      },
     };
   const products = await Product.findAll({
     subQuery: false,
@@ -135,6 +149,7 @@ interface UploadedFile {
 const upload = Multer({ dest: "uploads/" }); // Define o diretório onde os arquivos serão salvos
 
 async function postProduct(req: Request, res: Response, next: NextFunction) {
+  console.log("🚀 ~ postProduct ~ req.body:", JSON.stringify(req.body))
   const body = JSON.parse(req.body.json) as ProductResponse;
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
@@ -212,8 +227,8 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
 
 async function postProducts(req: Request, res: Response, next: NextFunction) {
   const body = JSON.parse(req.body.json) as ProductResponse &
-  { files: UploadedFile[] }[];
-    
+    { files: UploadedFile[] }[];
+
   const files: UploadedFile[] = (req as MulterRequest).files as UploadedFile[]; // Obtém a lista de arquivos enviados
   await Product.create({
     nome: body.nome,

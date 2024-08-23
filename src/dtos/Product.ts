@@ -42,6 +42,7 @@ async function transformProducts(products: any[]): Promise<ProductResponse[]> {
             nome: product.nome,
             valor_produto: product.valor_produto,
             quantity: product.quantity,
+            discount: product.discount,
             descricao: product.descricao,
         };
 

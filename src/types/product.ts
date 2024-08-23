@@ -12,6 +12,7 @@ interface ProductResponse {
   thumbnails?: string[]
   cores?: ProductoColor[];
   tamanhos?: ProductoSize[];
+  discount?: number;
 }
 interface ProductoColor {
   id?: number;

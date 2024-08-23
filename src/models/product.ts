@@ -10,6 +10,7 @@ export const Product = database.sequelize.define('produto', {
   desativado: { type: Sequelize.BOOLEAN },
   valor_produto: { type: Sequelize.FLOAT },
   quantity: { type: Sequelize.INTEGER },
+  discount: { type: Sequelize.INTEGER },
 })
 
 
