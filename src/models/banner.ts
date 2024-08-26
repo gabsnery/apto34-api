@@ -8,8 +8,8 @@ export const Banner = database.sequelize.define(
   {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: Sequelize.STRING(35), allowNull: false },
-    description: { type: Sequelize.STRING(35), allowNull: true },
-    url_image: { type: Sequelize.STRING(35), allowNull: true },
+    description: { type: Sequelize.STRING(800), allowNull: true },
+    url_image: { type: Sequelize.STRING(255), allowNull: true },
     active_until: { type: Sequelize.DATE, allowNull: true },
     id_type: { type: Sequelize.INTEGER, allowNull: false },
   },

@@ -12,7 +12,7 @@ export const Payment = database.sequelize.define('pagamento', {
     status_detail: { type: Sequelize.TEXT, allowNull: true },
     pagamento_confirmado: { type: Sequelize.BOOLEAN, allowNull: false },
     data_pagamento_confirmado: { type: Sequelize.DATEONLY, allowNull: true },
-    mp_id: { type: Sequelize.INTEGER, allowNull: false },
+    mp_id: { type: Sequelize.STRING(35), allowNull: true },
     pix_qrcode: { type: Sequelize.TEXT, allowNull: true },
 
 }, {

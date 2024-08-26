@@ -14,6 +14,16 @@ interface ProductResponse {
   tamanhos?: ProductoSize[];
   discount?: number;
 }
+
+export interface ProductGetResponse {
+  id?: number;
+  nome: string;
+  descricao: string;
+  valor_produto?: number;
+  quantity: number;
+  desativado?: boolean;
+  discount?: number;
+}
 interface ProductoColor {
   id?: number;
   descricao?: string;

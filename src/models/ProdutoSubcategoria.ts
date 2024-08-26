@@ -18,6 +18,9 @@ export const ProdutoSubcategoria = database.sequelize.define('produto_subcategor
       type: Sequelize.BOOLEAN,
       allowNull: false,
     },
+    produtoCategoriaId: {
+      type: Sequelize.INTEGER
+    }
   }, {
     tableName: 'produto_subcategoria',
     timestamps: false,
