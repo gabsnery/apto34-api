@@ -137,8 +137,53 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
       ],
     },
   });
+  const count_prod = await Product.count({
+    order: [["createdAt", "DESC"]],
+    subQuery: false,
+    where: whereClause,
+    include: [
+      {
+        model: ProdutoSubcategoria,
+        as: "produtoSubcategoria",
+        required: true,
+        where: req.query.type
+          ? {
+              id: req.query.type || [],
+            }
+          : undefined,
+        include: {
+          model: ProdutoCategoria,
+          as: "produtoCategoria",
+          required: true,
+        },
+      },
+      {
+        model: Stock,
+        as: "stock_product",
+        required: true,
+        where: {
+          colorId: [2, 3],
+          sizeId: [2, 3],
+        },
+      },
+      {
+        model: Photo,
+        as: "photo",
+      },
+    ],
+    group: ["produto.id"], // Agrupa por produto
+    having: Sequelize.literal("SUM(stock_product.quantity) > 0"), // Filtra produtos com soma de estoque > 0
+    attributes: {
+      include: [
+        [
+          Sequelize.fn("SUM", Sequelize.col("stock_product.quantity")),
+          "totalStock",
+        ], // Inclui o total do estoque como atributo
+      ],
+    },
+  });
   const etste = await transformProducts(products);
-  res.status(201).json(etste);
+  res.status(201).json({products:etste,total_count:count_prod.length});
 }
 interface UploadedFile {
   originalname: string;
