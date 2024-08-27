@@ -13,6 +13,7 @@ interface ProductResponse {
   cores?: ProductoColor[];
   tamanhos?: ProductoSize[];
   discount?: number;
+  stock?:any[]
 }
 
 export interface ProductGetResponse {

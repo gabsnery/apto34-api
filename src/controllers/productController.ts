@@ -9,7 +9,7 @@ import { Size } from "../models/size";
 import ProductResponse from "../types/product";
 import { uploadFileGoogleStorage } from "../utils/upload";
 import { decryptId, encryptId } from "../utils/encrypt";
-import transformProducts from "../dtos/Product";
+import transformProducts, { transformProduct } from "../dtos/Product";
 import Sequelize, { literal } from "sequelize";
 import { group } from "console";
 
@@ -45,30 +45,37 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
       {
         model: ProdutoSubcategoria,
         as: "produtoSubcategoria",
+        required: true,
         include: {
           model: ProdutoCategoria,
           as: "produtoCategoria",
-          where: {
-            id: 1,
-          },
         },
+      },
+      {
+        model: Stock,
+        as: "stock_product",
+        include: [
+          {
+            model: Size,
+            as: "stock_size",
+          },
+          {
+            model: Color,
+            as: "stock_color",
+          },
+        ],
       },
       {
         model: Photo,
         as: "photo",
       },
-      {
-        model: Color,
-        as: "color",
-      },
-      {
-        model: Size,
-        as: "size",
-      },
     ],
   });
-  const etste = await transformProducts([product]);
-  res.status(201).json(etste[0]);
+  console.log("🚀 ~ getProduct ~ product:", JSON.stringify(product));
+  console.log("🚀 ~ getProduct ~ produtoSubcategoria:", JSON.stringify(product.produtoSubcategoria));
+  console.log("🚀 ~ getProduct ~ stock_product:", JSON.stringify(product.stock_product));
+  const teste = await transformProduct(product)
+  res.status(201).json(teste);
 }
 
 async function getProducts(req: Request, res: Response, next: NextFunction) {
@@ -183,7 +190,7 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
     },
   });
   const etste = await transformProducts(products);
-  res.status(201).json({products:etste,total_count:count_prod.length});
+  res.status(201).json({ products: etste, total_count: count_prod.length });
 }
 interface UploadedFile {
   originalname: string;
@@ -322,18 +329,19 @@ const getCoverImage = async (
 ): Promise<void> => {
   const id = decodeURI(req.params.id);
   const photo = await Photo.findOne({
-    include: [{
-      model: Product,
-      required: true,
-      as:'product',
-      through: {
-              where: {
-                produtoId: {[Sequelize.Op.eq]: id },
-                is_cover:true
-              }
-          }
-      }
-  ]
+    include: [
+      {
+        model: Product,
+        required: true,
+        as: "product",
+        through: {
+          where: {
+            produtoId: { [Sequelize.Op.eq]: id },
+            is_cover: true,
+          },
+        },
+      },
+    ],
   });
   console.log("🚀 ~ photo:", photo);
   try {
@@ -347,7 +355,7 @@ const getCoverImage = async (
       });
     res.json({ url: url });
   } catch (error: any) {
-    res.json({ url: '' });
+    res.json({ url: "" });
   }
   /* 
   const fullPath = path.join(__dirname, '../rebelmoon.jpg');

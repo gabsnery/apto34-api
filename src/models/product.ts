@@ -96,5 +96,5 @@ Stock.belongsTo(Product, { foreignKey: 'productId' });
 Color.hasMany(Stock, { foreignKey: 'colorId' });
 Stock.belongsTo(Color, { foreignKey: 'colorId', as: 'stock_color' });
 
-Stock.hasMany(Size, { foreignKey: 'sizeId' });
-Size.belongsTo(Stock, { foreignKey: 'sizeId', as: 'stock_size' });
+Size.hasMany(Stock, { foreignKey: 'sizeId'});
+Stock.belongsTo(Size, { foreignKey: 'sizeId', as: 'stock_size'  });
