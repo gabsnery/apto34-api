@@ -220,7 +220,7 @@ app.post("/login", async (req, res) => {
         { user_id: user.id, email, name: user.name },
         process.env.TOKEN_KEY,
         {
-          expiresIn: "2h",
+          expiresIn: "5h",
         }
       );
       user.token = token;

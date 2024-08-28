@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Product } from "../models/product";
+import { Product, Stock } from "../models/product";
 import express from "express";
 import auth from "../middleware/auth";
 import { Size } from "../models/size";
@@ -12,6 +12,9 @@ import { Client } from "../models/client";
 import { FiscalNote } from "../models/nota";
 import { Payment } from "../models/payment";
 import { changeStatus } from "../utils/changeOrderStatus";
+import Sequelize, { literal, where } from "sequelize";
+
+
 const database = require("../config/database");
 const jwt = require("jsonwebtoken");
 
@@ -44,7 +47,7 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
             where: { status_pedido: "Em analise" },
           });
           Pedido.create({
-            idPedidoStatus:pedidoStatus.id,
+            idPedidoStatus: pedidoStatus.id,
             data_pedido_realizado: Date.now(),
             idCliente: body.clienteId,
             idEntrega: newDeliver.id,
@@ -53,6 +56,7 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
           })
             .then(async (newOrder: typeof Pedido) => {
               const products_count = body.produtos.length;
+              console.log("🚀 ~ .then ~ body.produtos:", body.produtos)
               for (let i = 0; i < products_count; i++) {
                 await PedidoTemProdutos.create({
                   quantidade: body.produtos[i].quantidade,
@@ -60,6 +64,23 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
                   desconto: 0,
                   idPedido: newOrder.id,
                 });
+                await Stock.findOne(
+                  {
+                    where: {
+                      productId: body.produtos[i].id,
+                      colorId: body.produtos[i].idColor,
+                      sizeId: body.produtos[i].idSize,
+                    },
+                  }
+                ).then((stock: typeof Stock) => {
+                  console.log("🚀 ~ ).then ~ stock:", stock)
+                  stock.update({where:{
+                    id:stock.id
+                  }},  {
+                    quantity: Sequelize.literal("quantity - " + body.produtos[i].quantidade.toString()),
+                    reserved_quantity: Sequelize.literal("reserved_quantity + " + body.produtos[i].quantidade.toString()),
+                  },)
+                })
               }
               res.status(201).json(newOrder);
             })

@@ -12,6 +12,7 @@ import { decryptId, encryptId } from "../utils/encrypt";
 import transformProducts, { transformProduct } from "../dtos/Product";
 import Sequelize, { literal } from "sequelize";
 import { group } from "console";
+import PedidoRequest from "../types/pedido";
 
 const { Op } = require("sequelize");
 
@@ -71,10 +72,8 @@ async function getProduct(req: Request, res: Response, next: NextFunction) {
       },
     ],
   });
-  console.log("🚀 ~ getProduct ~ product:", JSON.stringify(product));
-  console.log("🚀 ~ getProduct ~ produtoSubcategoria:", JSON.stringify(product.produtoSubcategoria));
-  console.log("🚀 ~ getProduct ~ stock_product:", JSON.stringify(product.stock_product));
-  const teste = await transformProduct(product)
+
+  const teste = await transformProduct(product);
   res.status(201).json(teste);
 }
 
@@ -96,6 +95,12 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
         [Sequelize.Op.gte]: +discount,
       },
     };
+
+  let stock_where:any = {}
+  if (req.query.color)
+    stock_where['colorId']= req.query.color
+  if (req.query.size)
+    stock_where['sizeId']= req.query.size
 
   const products = await Product.findAll({
     order: [["createdAt", "DESC"]],
@@ -123,10 +128,7 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
         model: Stock,
         as: "stock_product",
         required: true,
-        where: {
-          colorId: [2, 3],
-          sizeId: [2, 3],
-        },
+        where:stock_where,
       },
       {
         model: Photo,
@@ -168,10 +170,7 @@ async function getProducts(req: Request, res: Response, next: NextFunction) {
         model: Stock,
         as: "stock_product",
         required: true,
-        where: {
-          colorId: [2, 3],
-          sizeId: [2, 3],
-        },
+        where:stock_where,
       },
       {
         model: Photo,
@@ -277,6 +276,29 @@ async function postProduct(req: Request, res: Response, next: NextFunction) {
       res.status(400).json(erro);
     });
 }
+async function checkAvailability(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const produtos = req.body as Pick<PedidoRequest, "produtos">["produtos"];
+  const products_count = produtos.length;
+  let allAvailable = true;
+  for (let i = 0; i < products_count; i++) {
+    const quantityAvailable = await Stock.findOne({
+      where: {
+        productId: produtos[i].id,
+        colorId: produtos[i].idColor,
+        sizeId: produtos[i].idSize,
+      },
+    });
+    if (quantityAvailable.quantity < produtos[i].quantidade) {
+      allAvailable = false;
+      break;
+    }
+  }
+  res.json(allAvailable);
+}
 
 async function patchProduct(req: Request, res: Response, next: NextFunction) {
   const id = req.params.id;
@@ -381,6 +403,7 @@ router.get("/:start/:count", getProducts);
 
 router.put("/:id", patchProduct);
 
+router.post("/checkAvailability", checkAvailability);
 router.post("/", upload.array("files"), postProduct);
 
 export default router;

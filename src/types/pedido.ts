@@ -25,7 +25,9 @@ export interface PedidoResponse {
 
 interface Productos {
   id?: number;
-  quantidade?: number;
+  quantidade: number;
+  idColor?: number;
+  idSize?: number;
 }
 interface Endereco {
   id?: number;

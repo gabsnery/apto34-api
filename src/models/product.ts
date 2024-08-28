@@ -84,6 +84,16 @@ export const Stock = database.sequelize.define("stock", {
     type: Sequelize.INTEGER, 
     allowNull: false 
   },
+  reserved_quantity: { 
+    type: Sequelize.INTEGER, 
+    allowNull: false ,
+    default:0
+  },
+  fulfilled_quantity: { 
+    type: Sequelize.INTEGER, 
+    allowNull: false ,
+    default:0
+  },
 }, {
   tableName: 'stock',
   timestamps: false
