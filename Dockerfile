@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Use o comando CMD para iniciar a aplicação
-CMD ["node", "index.js"]
+CMD ["node", "dist/index.js"]
