@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instale apenas as dependências de produção
-RUN  npm i
+RUN NODE_ENV=development npm i
 
 # Copie o restante do código da aplicação
 COPY . .
