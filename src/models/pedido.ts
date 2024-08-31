@@ -4,6 +4,8 @@ import { Deliver } from "./deliver";
 import { FiscalNote } from "./nota";
 import { Payment } from "./payment";
 import { Product } from "./product";
+import { Size } from "./size";
+import { Color } from "./color";
 const database = require("../config/database");
 
 // Definindo o modelo para a tabela "pedido"
@@ -83,16 +85,29 @@ export const PedidoTemProdutos = database.sequelize.define(
   },
   {
     tableName: "pedido_tem_produto",
-    as: "pedido_tem_produto",
   }
 );
+
+
+
 Product.belongsToMany(Pedido, {
   through: PedidoTemProdutos,
   as: "pedido",
   foreignKey: "idProduto",
 });
+
 Pedido.belongsToMany(Product, {
   through: PedidoTemProdutos,
   foreignKey: "idPedido",
   as: "products",
+});
+
+PedidoTemProdutos.belongsTo(Color, {
+  foreignKey: 'idColor',
+  as: 'corSelecionada',
+});
+
+PedidoTemProdutos.belongsTo(Size, {
+  foreignKey: 'idSize',
+  as: 'tamanhoSelecionado',
 });

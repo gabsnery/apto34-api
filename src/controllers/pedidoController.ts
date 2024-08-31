@@ -14,7 +14,6 @@ import { Payment } from "../models/payment";
 import { changeStatus } from "../utils/changeOrderStatus";
 import Sequelize, { literal, where } from "sequelize";
 
-
 const database = require("../config/database");
 const jwt = require("jsonwebtoken");
 
@@ -56,31 +55,41 @@ async function postPedido(req: Request, res: Response, next: NextFunction) {
           })
             .then(async (newOrder: typeof Pedido) => {
               const products_count = body.produtos.length;
-              console.log("🚀 ~ .then ~ body.produtos:", body.produtos)
+              console.log("🚀 ~ .then ~ body.produtos:", body.produtos);
               for (let i = 0; i < products_count; i++) {
                 await PedidoTemProdutos.create({
                   quantidade: body.produtos[i].quantidade,
                   idProduto: body.produtos[i].id,
                   desconto: 0,
+                  idSize: body.produtos[i].idSize,
+                  idColor: body.produtos[i].idColor,
                   idPedido: newOrder.id,
                 });
-                await Stock.findOne(
-                  {
-                    where: {
-                      productId: body.produtos[i].id,
-                      colorId: body.produtos[i].idColor,
-                      sizeId: body.produtos[i].idSize,
+                await Stock.findOne({
+                  where: {
+                    productId: body.produtos[i].id,
+                    colorId: body.produtos[i].idColor,
+                    sizeId: body.produtos[i].idSize,
+                  },
+                }).then((stock: typeof Stock) => {
+                  console.log("🚀 ~ ).then ~ stock:", stock);
+                  stock.update(
+                    {
+                      where: {
+                        id: stock.id,
+                      },
                     },
-                  }
-                ).then((stock: typeof Stock) => {
-                  console.log("🚀 ~ ).then ~ stock:", stock)
-                  stock.update({where:{
-                    id:stock.id
-                  }},  {
-                    quantity: Sequelize.literal("quantity - " + body.produtos[i].quantidade.toString()),
-                    reserved_quantity: Sequelize.literal("reserved_quantity + " + body.produtos[i].quantidade.toString()),
-                  },)
-                })
+                    {
+                      quantity: Sequelize.literal(
+                        "quantity - " + body.produtos[i].quantidade.toString()
+                      ),
+                      reserved_quantity: Sequelize.literal(
+                        "reserved_quantity + " +
+                          body.produtos[i].quantidade.toString()
+                      ),
+                    }
+                  );
+                });
               }
               res.status(201).json(newOrder);
             })
