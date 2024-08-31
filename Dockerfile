@@ -1,20 +1,20 @@
-# Use uma imagem base adequada
-FROM node:18
+# Use a imagem oficial do Node.js
+FROM node:16
 
-# Defina o diretório de trabalho dentro do contêiner
+# Defina o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copie os arquivos de dependência do projeto para o contêiner
-COPY package.json package-lock.json ./
+# Copie o package.json e o package-lock.json
+COPY package*.json ./
 
-# Instale as dependências
+# Instale as dependências da API
 RUN npm install
 
-# Copie o restante dos arquivos do projeto para o contêiner
+# Copie o restante do código da API
 COPY . .
 
-# Exponha a porta que a aplicação estará escutando
-EXPOSE 3005
+# Exponha a porta que a API usará
+EXPOSE 3000
 
-# Comando para iniciar a aplicação dentro do contêiner
-CMD ["npm", "start"]
+# Comando para iniciar a API
+CMD ["node", "index.js"]
