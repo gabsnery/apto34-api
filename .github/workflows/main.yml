@@ -15,16 +15,22 @@ jobs:
       
     - name: Create .env file
       run: |
-          echo "VITE_ENV=${{ secrets.VITE_ENV }}" >> .env
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
-          echo "VITE_MERCADOLIVRE_TOKEN=${{ secrets.VITE_MERCADOLIVRE_TOKEN }}" >> .env
-          echo "VITE_I18N_PROJECTID=${{ secrets.VITE_I18N_PROJECTID }}" >> .env
-          echo "VITE_I18N_APIKEY=${{ secrets.VITE_I18N_APIKEY }}" >> .env
-          echo "VITE_REACT_APP_GOOGLE_ANALYTICS=${{ secrets.VITE_REACT_APP_GOOGLE_ANALYTICS }}" >> .env
-          echo "VITE_SENTRY_DNS=${{ secrets.VITE_SENTRY_DNS }}" >> .env
-          echo "VITE_SENTRY_RELEASE=${{ secrets.VITE_SENTRY_RELEASE }}" >> .env
-          echo "VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}" >> .env
-          echo "VITE_REACT_APP_VERSION=$npm_package_version" >> .env
+          echo "GOOGLE_STORAGE_KEYFILENAME=${{ secrets.GOOGLE_STORAGE_KEYFILENAME }}" >> .env
+          echo "GOOGLE_STORAGE_BUCKETNAME=${{ secrets.GOOGLE_STORAGE_BUCKETNAME }}" >> .env
+          echo "FRONT_APP_URL=${{ secrets.FRONT_APP_URL }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "TOKEN_KEY=${{ secrets.TOKEN_KEY }}" >> .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "REACT_APP_MERCADOLIVRE_TOKEN=${{ secrets.REACT_APP_MERCADOLIVRE_TOKEN }}" >> .env
+          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> .env
+          echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+          echo "NEW_RELIC_APP_NAME=${{ secrets.NEW_RELIC_APP_NAME }}" >> .env
+          echo "NEW_RELIC_LICENSE_KEY=${{ secrets.NEW_RELIC_LICENSE_KEY }}" >> .env
           cat .env  # Verificar o conteúdo do arquivo .env
           docker build -t ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }} .
     - name: Set up Docker Buildx
@@ -56,16 +62,22 @@ jobs:
         key: ${{ secrets.GCP_VM_SSH_KEY }}
         passphrase: ${{ secrets.GCP_VM_PASSPHRASE }}
         script: |
-          echo "VITE_ENV=${{ secrets.VITE_ENV }}" >> .env
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
-          echo "VITE_MERCADOLIVRE_TOKEN=${{ secrets.VITE_MERCADOLIVRE_TOKEN }}" >> .env
-          echo "VITE_I18N_PROJECTID=${{ secrets.VITE_I18N_PROJECTID }}" >> .env
-          echo "VITE_I18N_APIKEY=${{ secrets.VITE_I18N_APIKEY }}" >> .env
-          echo "VITE_REACT_APP_GOOGLE_ANALYTICS=${{ secrets.VITE_REACT_APP_GOOGLE_ANALYTICS }}" >> .env
-          echo "VITE_SENTRY_DNS=${{ secrets.VITE_SENTRY_DNS }}" >> .env
-          echo "VITE_SENTRY_RELEASE=${{ secrets.VITE_SENTRY_RELEASE }}" >> .env
-          echo "VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}" >> .env
-          echo "VITE_REACT_APP_VERSION=$npm_package_version" >> .env
+          echo "GOOGLE_STORAGE_KEYFILENAME=${{ secrets.GOOGLE_STORAGE_KEYFILENAME }}" >> .env
+          echo "GOOGLE_STORAGE_BUCKETNAME=${{ secrets.GOOGLE_STORAGE_BUCKETNAME }}" >> .env
+          echo "FRONT_APP_URL=${{ secrets.FRONT_APP_URL }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "TOKEN_KEY=${{ secrets.TOKEN_KEY }}" >> .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "REACT_APP_MERCADOLIVRE_TOKEN=${{ secrets.REACT_APP_MERCADOLIVRE_TOKEN }}" >> .env
+          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> .env
+          echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+          echo "NEW_RELIC_APP_NAME=${{ secrets.NEW_RELIC_APP_NAME }}" >> .env
+          echo "NEW_RELIC_LICENSE_KEY=${{ secrets.NEW_RELIC_LICENSE_KEY }}" >> .env
           docker pull ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
           docker stop node-api || true
           docker rm node-api || true
