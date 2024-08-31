@@ -1,20 +1,17 @@
-# Use a imagem oficial do Node.js
-FROM node:20.16.0
+FROM node:10-alpine
 
-# Defina o diretório de trabalho dentro do container
-WORKDIR /app
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 
-# Copie o package.json e o package-lock.json
+WORKDIR /home/node/app
+
 COPY package*.json ./
 
-# Instale as dependências da API
+USER node
+
 RUN npm install
 
-# Copie o restante do código da API
-COPY . .
+COPY --chown=node:node . .
 
-# Exponha a porta que a API usará
-EXPOSE 3000
+EXPOSE 8080
 
-# Comando para iniciar a API
-CMD ["node", "index.js"]
+CMD [ "node", "app.js" ]
