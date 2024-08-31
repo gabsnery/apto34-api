@@ -12,6 +12,8 @@ COPY package*.json ./
 # Copie o restante do código da aplicação
 COPY . .
 
+RUN npm run build
+
 # Exponha a porta que a API vai escutar
 EXPOSE 3000
 
