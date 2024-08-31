@@ -81,4 +81,4 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
           docker stop node-api || true
           docker rm node-api || true
-          docker run --env-file .env -d -p 3006:3000 --name node-api ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
+          docker run --env-file .env -d -p 3006:3006 --name node-api ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
