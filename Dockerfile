@@ -1,15 +1,20 @@
-FROM node:10-alpine
+# Use uma imagem base oficial do Node.js, uma versão mais recente de LTS
+FROM node:18-alpine AS base
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+# Defina o diretório de trabalho dentro do container
+WORKDIR /app
 
-WORKDIR /home/node/app
-
+# Copie apenas os arquivos package.json e package-lock.json
 COPY package*.json ./
 
-USER node
+# Instale apenas as dependências de produção
+RUN npm ci --only=production
 
-RUN npm install
+# Copie o restante do código da aplicação
+COPY . .
 
-EXPOSE 8080
+# Exponha a porta que a API vai escutar
+EXPOSE 3000
 
-CMD [ "node", "app.js" ]
+# Use o comando CMD para iniciar a aplicação
+CMD ["node", "index.js"]
