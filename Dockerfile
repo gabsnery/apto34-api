@@ -14,6 +14,11 @@ RUN npm install
 
 COPY --chown=node:node . .
 
+COPY . .
+
+# Construa a aplicação
+RUN npm run build
+
 EXPOSE 3006
 
 CMD [ "node", "dist/index.js" ]
