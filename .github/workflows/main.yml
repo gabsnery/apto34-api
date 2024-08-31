@@ -1,0 +1,72 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: apto34-aplication 
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Create .env file
+      run: |
+          echo "VITE_ENV=${{ secrets.VITE_ENV }}" >> .env
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+          echo "VITE_MERCADOLIVRE_TOKEN=${{ secrets.VITE_MERCADOLIVRE_TOKEN }}" >> .env
+          echo "VITE_I18N_PROJECTID=${{ secrets.VITE_I18N_PROJECTID }}" >> .env
+          echo "VITE_I18N_APIKEY=${{ secrets.VITE_I18N_APIKEY }}" >> .env
+          echo "VITE_REACT_APP_GOOGLE_ANALYTICS=${{ secrets.VITE_REACT_APP_GOOGLE_ANALYTICS }}" >> .env
+          echo "VITE_SENTRY_DNS=${{ secrets.VITE_SENTRY_DNS }}" >> .env
+          echo "VITE_SENTRY_RELEASE=${{ secrets.VITE_SENTRY_RELEASE }}" >> .env
+          echo "VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}" >> .env
+          echo "VITE_REACT_APP_VERSION=$npm_package_version" >> .env
+          cat .env  # Verificar o conteúdo do arquivo .env
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }} .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1  
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }} .
+        docker push ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
+  deploy:
+    needs: build  
+    runs-on: ubuntu-latest
+    environment: apto34-aplication 
+    steps:
+    - name: Stop and remove any existing container
+      run: |
+        docker stop node-api || true
+        docker rm node-api || true
+    - name: SSH to VM and deploy
+      uses: appleboy/ssh-action@v0.1.7  
+      with:
+        host: ${{ secrets.GCP_VM_IP }}
+        username: ${{ secrets.GCP_VM_USERNAME }}
+        key: ${{ secrets.GCP_VM_SSH_KEY }}
+        passphrase: ${{ secrets.GCP_VM_PASSPHRASE }}
+        script: |
+          echo "VITE_ENV=${{ secrets.VITE_ENV }}" >> .env
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+          echo "VITE_MERCADOLIVRE_TOKEN=${{ secrets.VITE_MERCADOLIVRE_TOKEN }}" >> .env
+          echo "VITE_I18N_PROJECTID=${{ secrets.VITE_I18N_PROJECTID }}" >> .env
+          echo "VITE_I18N_APIKEY=${{ secrets.VITE_I18N_APIKEY }}" >> .env
+          echo "VITE_REACT_APP_GOOGLE_ANALYTICS=${{ secrets.VITE_REACT_APP_GOOGLE_ANALYTICS }}" >> .env
+          echo "VITE_SENTRY_DNS=${{ secrets.VITE_SENTRY_DNS }}" >> .env
+          echo "VITE_SENTRY_RELEASE=${{ secrets.VITE_SENTRY_RELEASE }}" >> .env
+          echo "VITE_SENTRY_AUTH_TOKEN=${{ secrets.VITE_SENTRY_AUTH_TOKEN }}" >> .env
+          echo "VITE_REACT_APP_VERSION=$npm_package_version" >> .env
+          docker pull ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
+          docker stop node-api || true
+          docker rm node-api || true
+          docker run --env-file .env -d -p 3006:3000 --name node-api ${{ secrets.DOCKER_USERNAME }}/node-api:${{ github.sha }}
